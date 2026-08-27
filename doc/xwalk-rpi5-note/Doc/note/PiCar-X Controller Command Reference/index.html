@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/PiCar-X%20Controller%20Command%20Reference/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/xwalk-rpi5-note/Doc/note/PiCar-X%20Controller%20Command%20Reference/">
       
       
         <link rel="prev" href="../Onboard%20MCU/">
@@ -3155,7 +3155,7 @@ Run the setup block once in each terminal before using the examples.</p>
 <li>Hardware-labelled tests remain opt-in and are not part of this cheat sheet.</li>
 </ul>
 <h2 id="terminal-setup">Terminal setup<a class="headerlink" href="#terminal-setup" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">cd /repo/joxjoh24/xWalkPiCarAI
+<pre><code class="language-bash">cd /opt/xwalk/workspace
 XWALK_PICARX_CLI=build-rpi/cmake/xWalkController/xWalkApp/xwalk-picarx-control
 </code></pre>
 <h2 id="help-and-preflight">Help and preflight<a class="headerlink" href="#help-and-preflight" title="Permanent link">&para;</a></h2>
@@ -3168,7 +3168,7 @@ $XWALK_PICARX_CLI --trace CTRL.024.enable doctor
 </code></pre>
 <p>Use <code>--deployment-config PATH</code> to select a different deployment configuration.
 The Raspberry Pi build and provisioning sequence is documented in the
-<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkController/README.md#raspberry-pi-compilation-and-test-discovery">Controller README</a>.</p>
+<a href="https://github.com/TARS-v00-01/releases/blob/master/xWalk-rpi5-hw/xWalkController/README.md#raspberry-pi-compilation-and-test-discovery">Controller README</a>.</p>
 <h2 id="basic-driving">Basic driving<a class="headerlink" href="#basic-driving" title="Permanent link">&para;</a></h2>
 <pre><code class="language-bash">$XWALK_PICARX_CLI move forward --speed 40 --duration 2.5
 $XWALK_PICARX_CLI move backward --speed 25 --duration 1
@@ -3208,7 +3208,7 @@ ffplay http://127.0.0.1:8080/stream
 </code></pre>
 <p>For workstation playback, keep an SSH tunnel running in one workstation
 terminal. The current Raspberry Pi command is:</p>
-<pre><code class="language-bash">ssh -N -L 8080:127.0.0.1:8080 xwalk@192.168.1.156
+<pre><code class="language-bash">ssh -N -L 8080:127.0.0.1:8080 xwalk@192.0.2.10
 </code></pre>
 <p>Then play the forwarded stream from another workstation terminal:</p>
 <pre><code class="language-bash">ffplay http://127.0.0.1:8080/stream
