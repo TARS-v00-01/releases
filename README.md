@@ -1,7 +1,9 @@
 # TARS-v00-01 releases
 
-This private repository contains reviewed TARS-v00-01 release artifacts and the generated xWalk developer wiki.
+This public repository contains reviewed TARS-v00-01 release artifacts and the generated xWalk developer wiki.
 It replaces the former `demo-repository`; product source continues to be reviewed and submitted through Gerrit.
+
+The published documentation is available at <https://tars-v00-01.github.io/releases/>.
 
 ## Contents
 
@@ -37,7 +39,8 @@ dpkg-deb --info package/tars-v00-01.deb
 
 ## Documentation
 
-Serve the generated wiki locally from the repository root:
+Read the generated wiki online at <https://tars-v00-01.github.io/releases/>. To serve the same content locally from
+the repository root:
 
 ```bash
 python3 -m http.server 8000 --directory doc
@@ -53,3 +56,4 @@ xWalk-rpi5-tool/doc-tool/wiki.sh verify
 
 Changes to product source belong in the owning Gerrit projects. This repository stores only release packages and
 generated documentation. Product defects and release requests are tracked in Jira; GitHub Issues are disabled.
+The published site uses a dedicated `gh-pages` branch and does not require a billable GitHub Actions workflow.

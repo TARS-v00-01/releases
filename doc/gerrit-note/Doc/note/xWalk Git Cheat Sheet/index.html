@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/">
       
       
         <link rel="prev" href="../TARS-v00-01%20Submit-Gated%20Mirrors/">
@@ -3338,7 +3338,7 @@ pending component commit in the superproject. After the component change is
 submitted, the automatic integration uplift creates the reviewed superproject
 gitlink update.</p>
 <h2 id="enter-the-workspace">Enter the workspace<a class="headerlink" href="#enter-the-workspace" title="Permanent link">&para;</a></h2>
-<pre><code class="language-bash">cd /repo/joxjoh24/MyGitCode/MyPiCarX
+<pre><code class="language-bash">cd /opt/xwalk/workspace
 </code></pre>
 <p>Load the project Git environment in every new Bash session:</p>
 <pre><code class="language-bash">source xWalk-git-env.sh
@@ -3457,7 +3457,7 @@ currently pinned commit without deleting the component branch, run:</p>
 only when the local component work is already committed or otherwise safe.</p>
 <h2 id="start-work-in-a-component-repository">Start work in a component repository<a class="headerlink" href="#start-work-in-a-component-repository" title="Permanent link">&para;</a></h2>
 <p>Enter the owning component. This example uses <code>xWalk-rpi5-tool</code>:</p>
-<pre><code class="language-bash">cd /repo/joxjoh24/MyGitCode/MyPiCarX/xWalk-rpi5-tool
+<pre><code class="language-bash">cd /opt/xwalk/workspace/xWalk-rpi5-tool
 </code></pre>
 <p>Confirm that the component worktree is clean:</p>
 <pre><code class="language-bash">git status --short --branch
@@ -3589,7 +3589,7 @@ has this form:</p>
 automatic integration uplift is pending. Wait for the uplift review to pass
 complete integration CI, receive approval, and be submitted. Then update the
 root checkout:</p>
-<pre><code class="language-bash">cd /repo/joxjoh24/MyGitCode/MyPiCarX
+<pre><code class="language-bash">cd /opt/xwalk/workspace
 </code></pre>
 <pre><code class="language-bash">git pull --ff-only
 </code></pre>
