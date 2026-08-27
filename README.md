@@ -1,4 +1,55 @@
-# Welcome to your organization's demo respository
-This code repository (or "repo") is designed to demonstrate the best GitHub has to offer with the least amount of noise.
+# TARS-v00-01 releases
 
-The repo includes an `index.html` file (so it can render a web page), two GitHub Actions workflows, and a CSS stylesheet dependency.
+This private repository contains reviewed TARS-v00-01 release artifacts and the generated xWalk developer wiki.
+It replaces the former `demo-repository`; product source continues to be reviewed and submitted through Gerrit.
+
+## Contents
+
+- `package/tars-v00-01.deb` is the ARM64 Debian package for Raspberry Pi 5.
+- `doc/index.html` is the entry point for the generated static developer wiki.
+
+Both artifacts were built from submitted `TARS-v00-01/xWalkPiCarAI` integration commit
+`6d67a7fea14f5e8ea962086c305cdd03fcb6d124`. The package uses the repository-supported USB camera profile so it
+can be built without requiring a connected camera or Robot HAT. The wiki was generated with the repository's
+strict `wiki.sh verify` profile.
+
+## Package details
+
+| Field | Value |
+| --- | --- |
+| File | `package/tars-v00-01.deb` |
+| Debian package | `xwalk-picarx` |
+| Version | `1.0.0` |
+| Architecture | `arm64` |
+| SHA-256 | `d4c876521602118dfd71d5521ac9372c4e885f6069594150a6d8c5a69cafb8a5` |
+
+Install on a supported ARM64 Raspberry Pi system:
+
+```bash
+sudo apt install ./package/tars-v00-01.deb
+```
+
+Inspect the package without installing it:
+
+```bash
+dpkg-deb --info package/tars-v00-01.deb
+```
+
+## Documentation
+
+Serve the generated wiki locally from the repository root:
+
+```bash
+python3 -m http.server 8000 --directory doc
+```
+
+Then open `http://127.0.0.1:8000/`. Regenerate documentation in the integration workspace with:
+
+```bash
+xWalk-rpi5-tool/doc-tool/wiki.sh verify
+```
+
+## Publication policy
+
+Changes to product source belong in the owning Gerrit projects. This repository stores only release packages and
+generated documentation. Product defects and release requests are tracked in Jira; GitHub Issues are disabled.

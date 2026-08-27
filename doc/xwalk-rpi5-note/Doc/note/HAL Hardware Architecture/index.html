@@ -1,0 +1,4402 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture, PiCar-X, Gerrit, CI, and deployment notes for xWalk.">
+      
+      
+      
+        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/HAL%20Hardware%20Architecture/">
+      
+      
+        <link rel="prev" href="../HAL%20Arcithure/">
+      
+      
+        <link rel="next" href="../Hardware%20Introduction/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>xWalk HAL hardware and backend architecture - xWalk Developer Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xwalk-hal-hardware-and-backend-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-header__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xWalk Developer Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              xWalk HAL hardware and backend architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-nav__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xWalk Developer Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerrit note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit developer notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2_1" id="__nav_2_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20CI%20Changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene CI changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20Code%20Health%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene Code Health CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Admin%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit admin setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Administrator%20Request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit administrator request
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Backup%20and%20Restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit backup and restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20CI%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit CI configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Local%20Linux%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit local Linux setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Multi%20Repository%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit multi-repository architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Security%20and%20Remote%20Access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit security and remote access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Server%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit server overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Setup%20Installer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit setup installer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Storage%20and%20Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit storage and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20User%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit user configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Integrated%20Uplift%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrated uplift workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/TARS-v00-01%20Submit-Gated%20Mirrors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TARS-v00-01 submit-gated mirrors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Git cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki tool
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wiki tool
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../wiki-tool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes Wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xwalk rpi5 note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Xwalk rpi5 note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk C++ Documentation Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_1" id="__nav_4_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20ADC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkAdc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Basic%20Class/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkTrace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Filedb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkConfigStore and XWalkConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20I2C/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkI2c
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors and actuators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Motor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMotor and XWalkMotors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Music/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMusic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20PWM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkPwm and XWalkPwmTimerState
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Pin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkGpio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Robot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkRobot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkServo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20TTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ speech interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ utility interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Add%20a%20User%20to%20a%20Gerrit%20Repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Add a User to a Gerrit Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Battery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the battery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CLI%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk CLI architecture and HAL integration plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Clean%20Build%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Build Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Community%20Tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community C++ adaptations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Controller%20Command%20Flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Controller Command Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Create Gerrit and Configure xWalk CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependency%20Installer%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMake Dependency Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependency%20Installer%20Script%20Flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Installer Script Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Deployment%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Deployment Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Device%20Tree%20Overlay%20Assets%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Tree Overlay Assets Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQ/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety and troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Account%20Setup%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit Account Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HAL%20Arcithure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk high-level architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk HAL hardware and backend architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk HAL hardware and backend architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-backend-design-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Backend design pattern
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-concrete-backend-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Concrete backend inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-hardware-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Hardware dependency graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-raspberry-pi-and-robot-hat-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Raspberry Pi and Robot HAT boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-i2c-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. I2C backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. I2C backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Consumers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-addresses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Addresses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-gpio-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. GPIO backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. GPIO backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Consumers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-robot-hat-mcu-peripherals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Robot HAT MCU peripherals
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Robot HAT MCU peripherals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-adc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 ADC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-pwm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PWM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-servo-and-motor-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Servo and motor composition
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Servo and motor composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-servo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Servo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-motor-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Motor modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Sensors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Sensors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-grayscale-and-line-tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Grayscale and line tracker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-ultrasonic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Ultrasonic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-adxl345" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 ADXL345
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-user-button" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 User button
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-leds-and-buzzers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. LEDs and buzzers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-board-control-and-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Board control and discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-shared-alsa-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Shared ALSA architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Shared ALSA architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-audio-owner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Audio owner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-music-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Music adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-speaker-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 Speaker adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-speech-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Speech backends
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Speech backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-speech-to-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Speech to text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-text-to-speech" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 Text to speech
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-language-model-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Language-model backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-voice-assistant-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Voice-assistant composition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-linux-utility-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Linux utility backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-configuration-diagnostics-and-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Configuration, diagnostics, and storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-resource-lifetime-and-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Resource lifetime and shutdown
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-verification-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20. Verification architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-backend-coverage-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21. Backend coverage summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-deployment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22. Deployment checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-aggregate-hardware-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23. Aggregate hardware status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Provisioning%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Provisioning Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Coverage%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host Coverage Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Production%20Readiness%20Work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host production readiness work
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Firmware Robot HAT documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Install%20I2S%20for%20Speaker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure I2S for the speaker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Jarvis%20and%20Gemini%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Jarvis and Optional Gemini Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Language%20Model%20Provider%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language-Model Provider Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../License%20Key%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence-Key Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Onboard%20MCU/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Onboard MCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PiCar-X%20Controller%20Command%20Reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PiCar-X Controller Command Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Control%20Motor%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control servos and motors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20DIY%20Car/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ line-following car
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Photoresistor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read a photoresistor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Plant%20Monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ plant monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Say%20Something/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produce speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ security-system composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Ultrasonic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read ultrasonic distance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ project examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%205%20PiCar-X%20Readiness%20Audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi 5 and PiCar-X Readiness Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%20Setup%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Setup Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release%20Acceptance%20Checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release acceptance checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Environment%20Loader%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk environment loader guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Licence Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Tool%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk licence tool guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk-rpi5-tool%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk-rpi5-tool Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-backend-design-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Backend design pattern
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-concrete-backend-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Concrete backend inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-hardware-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Hardware dependency graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-raspberry-pi-and-robot-hat-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Raspberry Pi and Robot HAT boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-i2c-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. I2C backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. I2C backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Consumers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-addresses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Addresses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-gpio-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. GPIO backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. GPIO backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Ownership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Consumers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-robot-hat-mcu-peripherals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Robot HAT MCU peripherals
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Robot HAT MCU peripherals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-adc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 ADC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-pwm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PWM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-servo-and-motor-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Servo and motor composition
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Servo and motor composition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-servo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Servo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-motor-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Motor modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sensors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Sensors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Sensors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-grayscale-and-line-tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Grayscale and line tracker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-ultrasonic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Ultrasonic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-adxl345" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 ADXL345
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-user-button" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 User button
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-leds-and-buzzers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. LEDs and buzzers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-board-control-and-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Board control and discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-shared-alsa-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Shared ALSA architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Shared ALSA architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-audio-owner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Audio owner
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-music-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Music adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-speaker-adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 Speaker adapter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-speech-backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Speech backends
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Speech backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-speech-to-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Speech to text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-text-to-speech" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 Text to speech
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-language-model-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Language-model backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-voice-assistant-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Voice-assistant composition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-linux-utility-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Linux utility backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-configuration-diagnostics-and-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Configuration, diagnostics, and storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-resource-lifetime-and-shutdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Resource lifetime and shutdown
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-verification-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20. Verification architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-backend-coverage-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21. Backend coverage summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-deployment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22. Deployment checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-aggregate-hardware-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23. Aggregate hardware status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="xwalk-hal-hardware-and-backend-architecture">xWalk HAL hardware and backend architecture<a class="headerlink" href="#xwalk-hal-hardware-and-backend-architecture" title="Permanent link">&para;</a></h1>
+<p><strong>Project:</strong> xWalk Firmware</p>
+<p><strong>Target:</strong> Raspberry Pi with SunFounder Robot HAT</p>
+<p><strong>Document date:</strong> 2026-08-01</p>
+<p><strong>Status:</strong> Current implementation</p>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>This document describes how xWalk reaches physical hardware and external providers. It covers Linux resource
+ownership, Robot HAT protocols, board-specific composition, audio, speech, model backends, lifecycle rules,
+and safe verification.</p>
+<p>For the layer overview, see <a href="../HAL%20Arcithure/">xWalk High-Level Architecture</a>. For application exposure, see
+<a href="../CLI%20Architecture/">CLI Architecture</a>.</p>
+<h2 id="2-backend-design-pattern">2. Backend design pattern<a class="headerlink" href="#2-backend-design-pattern" title="Permanent link">&para;</a></h2>
+<p>Hardware-independent modules store an opaque, non-owning context and a validated callback table. Concrete
+backends own Linux or provider resources and expose callback bridges.</p>
+<pre><code class="language-mermaid">flowchart LR
+    APP[Composition root]
+    OWNER[Linux or provider owner]
+    CALLBACK[Callback table and context]
+    CORE[Hardware-independent HAL]
+    FEATURE[Sensor, actuator, or service]
+
+    APP --&gt; OWNER
+    APP --&gt; CALLBACK
+    OWNER --&gt; CALLBACK
+    CALLBACK --&gt; CORE
+    CORE --&gt; FEATURE
+</code></pre>
+<p>The composition root creates owners before consumers. A core object never deletes the context or opens a
+target resource. Destruction proceeds from the highest-level consumer back to the owner.</p>
+<h2 id="3-concrete-backend-inventory">3. Concrete backend inventory<a class="headerlink" href="#3-concrete-backend-inventory" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Backend target</th>
+<th>Owner or adapter</th>
+<th>Resource or provider</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xWalkI2cLinux</code></td>
+<td><code>XWalkI2cLinux</code></td>
+<td>Linux <code>i2c-dev</code>, normally <code>/dev/i2c-1</code></td>
+</tr>
+<tr>
+<td><code>xWalkGpioLinux</code></td>
+<td><code>XWalkGpioLinux</code></td>
+<td>Linux GPIO character device, normally <code>/dev/gpiochip0</code></td>
+</tr>
+<tr>
+<td><code>xWalkSpiLinux</code></td>
+<td><code>XWalkSpiLinux</code></td>
+<td>Linux <code>spidev</code>, configured explicitly</td>
+</tr>
+<tr>
+<td><code>xWalkCameraLinux</code></td>
+<td><code>XWalkCameraLinux</code></td>
+<td>CSI through <code>rpicam-still</code> or USB through V4L2 and <code>ffmpeg</code></td>
+</tr>
+<tr>
+<td><code>xWalkAudioAlsa</code></td>
+<td><code>XWalkAudioAlsa</code></td>
+<td>ALSA playback PCM streams and one mixer</td>
+</tr>
+<tr>
+<td><code>xWalkMusicAlsa</code></td>
+<td><code>XWalkMusicAlsa</code></td>
+<td>Music decoding and shared-audio callback adapter</td>
+</tr>
+<tr>
+<td><code>xWalkSpeakerAlsa</code></td>
+<td><code>XWalkSpeakerAlsa</code></td>
+<td>Bounded file decoding and shared-audio adapter</td>
+</tr>
+<tr>
+<td><code>xWalkSpeechToTextAlsa</code></td>
+<td><code>XWalkSpeechToTextAlsa</code></td>
+<td>ALSA capture plus injected recognizer</td>
+</tr>
+<tr>
+<td><code>xWalkTextToSpeechAlsa</code></td>
+<td><code>XWalkTextToSpeechAlsa</code></td>
+<td>Injected synthesizer plus shared ALSA playback</td>
+</tr>
+<tr>
+<td><code>xWalkLanguageModelOllama</code></td>
+<td><code>XWalkLanguageModelOllama</code></td>
+<td>Ollama JSON over libcurl HTTP transport</td>
+</tr>
+<tr>
+<td><code>xWalkUtilsLinux</code></td>
+<td><code>XWalkUtilsLinux</code></td>
+<td>Linux terminal, process, network, user, and descriptor services</td>
+</tr>
+</tbody>
+</table>
+<p>Device-tree discovery is implemented directly by <code>XWalkDevice</code> through filesystem wrappers. It is read-only
+and does not need a separate Linux backend target.</p>
+<h2 id="4-hardware-dependency-graph">4. Hardware dependency graph<a class="headerlink" href="#4-hardware-dependency-graph" title="Permanent link">&para;</a></h2>
+<pre><code class="language-mermaid">flowchart TD
+    I2CLINUX[XWalkI2cLinux] --&gt; I2C[XWalkI2c]
+    GPIOLINUX[XWalkGpioLinux] --&gt; GPIO[XWalkGpio]
+    SPILINUX[XWalkSpiLinux] --&gt; SPI[XWalkSpi]
+    CAMERALINUX[XWalkCameraLinux] --&gt; CAMERA[XWalkCamera]
+    I2C --&gt; PWM[XWalkPwm]
+    I2C --&gt; ADC[XWalkAdc]
+    I2C --&gt; ADXL[XWalkAdxl345]
+    PWM --&gt; SERVO[XWalkServo]
+    PWM --&gt; MOTOR[XWalkMotor]
+    GPIO --&gt; MOTOR
+    ADC --&gt; LINE[XWalkLineTracker]
+    GPIO --&gt; ULTRA[XWalkUltrasonic]
+    GPIO --&gt; BUTTON[XWalkUserButton]
+    ADC --&gt; BOARD[XWalkBoardControl]
+    GPIO --&gt; BOARD
+    SERVO --&gt; ROBOT[XWalkRobot]
+    ALSA[XWalkAudioAlsa] --&gt; MUSIC[XWalkMusicAlsa]
+    ALSA --&gt; SPEAKER[XWalkSpeakerAlsa]
+    ALSA --&gt; TTS[XWalkTextToSpeechAlsa]
+    CAPTURE[ALSA capture] --&gt; STT[XWalkSpeechToTextAlsa]
+    OLLAMA[Ollama and libcurl] --&gt; MODEL[XWalkLanguageModel]
+</code></pre>
+<h2 id="5-raspberry-pi-and-robot-hat-boundary">5. Raspberry Pi and Robot HAT boundary<a class="headerlink" href="#5-raspberry-pi-and-robot-hat-boundary" title="Permanent link">&para;</a></h2>
+<p>The Device Tree overlay is boot-time kernel configuration. It may expose I2C, SPI, I2S, GPIO, HAT metadata,
+and an ALSA sound card, but it does not provide application ownership or HAL behavior.</p>
+<p>Only the overlay for the physically connected board should be active. Deployment must confirm:</p>
+<ul>
+<li>the selected Robot HAT revision and UUID;</li>
+<li>I2C bus and expected addresses;</li>
+<li>GPIO controller path and line numbering;</li>
+<li>ALSA PCM, mixer, and playback element names;</li>
+<li>group membership and permissions for I2C, GPIO, and audio devices;</li>
+<li>pin conflicts with overlay-owned audio control lines.</li>
+</ul>
+<p><code>XWalkSpiLinux</code> consumes one explicitly configured SPI device. The SPI-only CLI
+boot mode does not initialize the Robot HAT or any unrelated device.</p>
+<h2 id="6-i2c-backend">6. I2C backend<a class="headerlink" href="#6-i2c-backend" title="Permanent link">&para;</a></h2>
+<h3 id="61-ownership">6.1 Ownership<a class="headerlink" href="#61-ownership" title="Permanent link">&para;</a></h3>
+<p><code>XWalkI2cLinux</code> owns one Linux I2C file descriptor. <code>XWalkI2c</code> stores a non-owning pointer to that backend and
+the probe, write-register, raw-read, and read-register callbacks.</p>
+<p>The default device is <code>/dev/i2c-1</code>, but boot reads a deployment-selected path. Complete logical transactions are
+serialized so another operation cannot change the selected slave between register selection and data transfer.</p>
+<h3 id="62-consumers">6.2 Consumers<a class="headerlink" href="#62-consumers" title="Permanent link">&para;</a></h3>
+<p>The I2C backend supports:</p>
+<ul>
+<li>Robot HAT PWM and ADC commands;</li>
+<li>direct ADXL345 register access;</li>
+<li>firmware-version acquisition;</li>
+<li>servo, motor, RGB LED, passive buzzer, line tracker, robot, and board composition.</li>
+</ul>
+<h3 id="63-addresses">6.3 Addresses<a class="headerlink" href="#63-addresses" title="Permanent link">&para;</a></h3>
+<p>Robot HAT modules normally probe supported MCU addresses <code>0x14</code>, <code>0x15</code>, and, where declared by the module,
+<code>0x16</code>. ADXL345 uses seven-bit address <code>0x53</code> by default.</p>
+<h2 id="7-gpio-backend">7. GPIO backend<a class="headerlink" href="#7-gpio-backend" title="Permanent link">&para;</a></h2>
+<h3 id="71-ownership">7.1 Ownership<a class="headerlink" href="#71-ownership" title="Permanent link">&para;</a></h3>
+<p>One <code>XWalkGpioLinux</code> instance owns one claimed Linux GPIO line and any associated event worker. <code>XWalkGpio</code>
+contains logical name mapping, direction, polarity, pull, edge, debounce, and callback dispatch.</p>
+<p>The Raspberry Pi deployment default is <code>/dev/gpiochip4</code>; individual HAL test
+targets retain their explicitly configured device paths. The Linux backend uses
+GPIO character-device ABI version 1. Boot passes the
+configured path to every owner. Optional exact kernel name and label checks plus a minimum required line count
+reject a mismatched controller before any line claim. No backend scans or selects the first chip automatically.</p>
+<h3 id="72-consumers">7.2 Consumers<a class="headerlink" href="#72-consumers" title="Permanent link">&para;</a></h3>
+<p>GPIO-backed consumers include:</p>
+<ul>
+<li>ultrasonic trigger and echo;</li>
+<li>active buzzer and single-color LED;</li>
+<li>user-button input and event monitoring;</li>
+<li>legacy motor direction lines;</li>
+<li>MCU reset and speaker-enable lines;</li>
+<li>other caller-selected digital pin operations.</li>
+</ul>
+<p>Interrupt callbacks must remain short. They must not perform blocking storage, model, speech, or playback
+work.</p>
+<h2 id="8-robot-hat-mcu-peripherals">8. Robot HAT MCU peripherals<a class="headerlink" href="#8-robot-hat-mcu-peripherals" title="Permanent link">&para;</a></h2>
+<h3 id="81-adc">8.1 ADC<a class="headerlink" href="#81-adc" title="Permanent link">&para;</a></h3>
+<p><code>XWalkAdc</code> supports public channels A0 through A7. Hardware mapping uses <code>7 - channel</code>, and acquisition uses
+command base <code>0x10</code>. One sample is a two-byte most-significant-byte-first 12-bit value. Conversion uses a
+3.3-volt reference and raw range zero through 4095.</p>
+<p>The PiCar-X graph uses A0, A1, and A2 for the grayscale module. Board battery measurement uses A4 and applies
+the documented three-to-one divider.</p>
+<h3 id="82-pwm">8.2 PWM<a class="headerlink" href="#82-pwm" title="Permanent link">&para;</a></h3>
+<p><code>XWalkPwm</code> supports P0 through P19. Output registers start at <code>0x20</code>. Prescaler registers use the <code>0x40</code> and
+<code>0x50</code> families, and period registers use the <code>0x44</code> and <code>0x54</code> families. Calculations use the 72-megahertz
+PWM clock.</p>
+<p>One caller-owned <code>XWalkPwmTimerState</code> represents timer-wide coupling:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Timer</th>
+<th>Channels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0</td>
+<td>P0 through P3</td>
+</tr>
+<tr>
+<td style="text-align: right;">1</td>
+<td>P4 through P7</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>P8 through P11</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>P12 through P15</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>P16 and P17</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td>P18</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td>P19</td>
+</tr>
+</tbody>
+</table>
+<p>Channels sharing a timer must use compatible frequency and period configuration.</p>
+<h2 id="9-servo-and-motor-composition">9. Servo and motor composition<a class="headerlink" href="#9-servo-and-motor-composition" title="Permanent link">&para;</a></h2>
+<h3 id="91-servo">9.1 Servo<a class="headerlink" href="#91-servo" title="Permanent link">&para;</a></h3>
+<p>The default servo contract uses 50 Hertz, a 4095-count period, angles from -90 through 90 degrees, and pulse
+widths from 500 through 2500 microseconds. Mechanical limits can be narrower than the electrical contract.</p>
+<p>The current PiCar-X composition assigns P0 to camera pan, P1 to camera tilt, and P2 to steering.</p>
+<h3 id="92-motor-modes">9.2 Motor modes<a class="headerlink" href="#92-motor-modes" title="Permanent link">&para;</a></h3>
+<p><code>XWalkDevice</code> selects motor composition by detected board information:</p>
+<table>
+<thead>
+<tr>
+<th>Board mode</th>
+<th>Left motor</th>
+<th>Right motor</th>
+<th>Direction ownership</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Legacy Robot HAT</td>
+<td>P13 plus D4</td>
+<td>P12 plus D5</td>
+<td>Two Linux GPIO lines</td>
+</tr>
+<tr>
+<td>Robot HAT v5</td>
+<td>P12 and P13</td>
+<td>P14 and P15</td>
+<td>Dual PWM, no direction GPIO</td>
+</tr>
+</tbody>
+</table>
+<p>Motor construction must begin from a stopped output. Confirm physical port assignment and polarity with wheels
+raised before enabling movement.</p>
+<h2 id="10-sensors">10. Sensors<a class="headerlink" href="#10-sensors" title="Permanent link">&para;</a></h2>
+<h3 id="101-grayscale-and-line-tracker">10.1 Grayscale and line tracker<a class="headerlink" href="#101-grayscale-and-line-tracker" title="Permanent link">&para;</a></h3>
+<p><code>XWalkGrayscaleModule</code> observes three caller-owned ADC channels in left, middle, and right order.
+<code>XWalkLineTracker</code> adds reference calibration, binary status, cliff detection, and line-position estimation.</p>
+<h3 id="102-ultrasonic">10.2 Ultrasonic<a class="headerlink" href="#102-ultrasonic" title="Permanent link">&para;</a></h3>
+<p><code>XWalkUltrasonic</code> uses separate trigger and echo GPIO objects. The PiCar-X application selects D2 and D3. The
+default echo timeout is 20 milliseconds, timeout retries are bounded, and distance is reported in centimeters.</p>
+<h3 id="103-adxl345">10.3 ADXL345<a class="headerlink" href="#103-adxl345" title="Permanent link">&para;</a></h3>
+<p><code>XWalkAdxl345</code> reads little-endian signed axis samples from registers <code>0x32</code>, <code>0x34</code>, and <code>0x36</code>, then scales
+them at 256 counts per standard gravity. It is implemented and hardware-buildable but not composed by the CLI.</p>
+<h3 id="104-user-button">10.4 User button<a class="headerlink" href="#104-user-button" title="Permanent link">&para;</a></h3>
+<p><code>XWalkUserButton</code> monitors an active-low pull-up GPIO with a 50-millisecond polling interval. It owns its
+monitor worker but not the GPIO or callback contexts. Stop and destruction join the worker.</p>
+<h2 id="11-leds-and-buzzers">11. LEDs and buzzers<a class="headerlink" href="#11-leds-and-buzzers" title="Permanent link">&para;</a></h2>
+<p><code>XWalkLed</code> drives one logical GPIO output. <code>XWalkRgbLed</code> coordinates three PWM channels and validates the full
+color request before changing outputs.</p>
+<p><code>XWalkBuzzer</code> supports active GPIO and passive PWM variants. The passive variant uses 50 percent duty while
+active and supports bounded frequency and duration playback. Construction requests the inactive state.</p>
+<p>Neither module is currently composed by the CLI.</p>
+<h2 id="12-board-control-and-discovery">12. Board control and discovery<a class="headerlink" href="#12-board-control-and-discovery" title="Permanent link">&para;</a></h2>
+<p><code>XWalkDevice</code> reads direct children under the configured firmware device-tree root and recognizes supported
+HAT metadata. Robot HAT v5 UUID <code>9daeea78-0000-076e-0032-582369ac3e02</code> selects speaker GPIO12 and motor
+mode 2.
+The legacy fallback selects speaker GPIO20 and motor mode 1.</p>
+<p><code>XWalkBoardControl</code> coordinates:</p>
+<ul>
+<li>MCU reset through logical <code>MCURST</code>, mapped to GPIO5 in the PiCar-X composition;</li>
+<li>battery voltage through ADC A4;</li>
+<li>board-selected speaker-enable GPIO;</li>
+<li>an injected speaker-prime callback;</li>
+<li>explicit speaker disable.</li>
+</ul>
+<p>The reset GPIO backend is temporary in the CLI because a later legacy motor may claim the same physical line.
+The temporary graph is destroyed before long-lived motor construction.</p>
+<p><code>XWalkFirmwareInfo</code> reads exactly three bytes from register <code>0x05</code> and formats <code>major.minor.patch</code>.</p>
+<h2 id="13-shared-alsa-architecture">13. Shared ALSA architecture<a class="headerlink" href="#13-shared-alsa-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="131-audio-owner">13.1 Audio owner<a class="headerlink" href="#131-audio-owner" title="Permanent link">&para;</a></h3>
+<p><code>XWalkAudioAlsa</code> opens one configured mixer during construction and owns up to eight PCM playback handles. Its
+public operations are mutex-serialized. It validates format, rate, one-through-eight channels, period size up
+to 4096 frames, latency, frame alignment, and payload bounds.</p>
+<p>The backend supports signed 16-bit little-endian and 32-bit floating-point little-endian PCM. Short writes are
+completed and underrun recovery is bounded to three attempts. Destruction closes streams and the mixer.</p>
+<p>PCM, mixer, and element defaults are <code>default</code>, <code>default</code>, and <code>PCM</code>; deployment should select explicit names
+after checking <code>aplay -l</code>, <code>aplay -L</code>, and <code>amixer scontrols</code>.</p>
+<h3 id="132-music-adapter">13.2 Music adapter<a class="headerlink" href="#132-music-adapter" title="Permanent link">&para;</a></h3>
+<p><code>XWalkMusicAlsa</code> maps the <code>XWalkMusicCallbacks</code> table to the shared audio owner. It handles sound-effect and
+music-file decoding, transport control, mixer volume, and signed 16-bit mono tones.</p>
+<p>The CLI creates this graph only for <code>self-drive</code> so horn and engine-start actions can use ALSA.</p>
+<h3 id="133-speaker-adapter">13.3 Speaker adapter<a class="headerlink" href="#133-speaker-adapter" title="Permanent link">&para;</a></h3>
+<p><code>XWalkSpeakerAlsa</code> decodes supported files in bounded chunks and supplies samples to <code>XWalkSpeaker</code> through
+the shared audio owner. The neutral speaker limits active tasks to eight and write batches to 1024 frames.</p>
+<p>The adapter and tests exist, but the Raspberry Pi CLI still installs an unavailable callback for its
+standalone <code>sound</code> command.</p>
+<h2 id="14-speech-backends">14. Speech backends<a class="headerlink" href="#14-speech-backends" title="Permanent link">&para;</a></h2>
+<h3 id="141-speech-to-text">14.1 Speech to text<a class="headerlink" href="#141-speech-to-text" title="Permanent link">&para;</a></h3>
+<p><code>XWalkSpeechToTextAlsa</code> owns bounded ALSA microphone capture and delegates recognition to an application
+recognizer. <code>XWalkSpeechToText</code> exposes readiness, bounded listen, file transcription, and stop.</p>
+<p>Microphone device, sample contract, recognizer, credentials, and privacy policy are deployment configuration.</p>
+<h3 id="142-text-to-speech">14.2 Text to speech<a class="headerlink" href="#142-text-to-speech" title="Permanent link">&para;</a></h3>
+<p><code>XWalkTextToSpeechAlsa</code> delegates synthesis to an application-selected provider, validates returned PCM, and
+writes it through <code>XWalkAudioAlsa</code>. <code>XWalkTextToSpeech</code> separately receives <code>XWalkBoardControl</code>, keeping
+speaker power sequencing outside the synthesis provider.</p>
+<p>Both backend targets and deterministic tests exist. Neither is composed by the current CLI.</p>
+<h2 id="15-language-model-backend">15. Language-model backend<a class="headerlink" href="#15-language-model-backend" title="Permanent link">&para;</a></h2>
+<p><code>XWalkLanguageModel</code> is provider-neutral. It forwards instructions, welcome text, bounded history operations,
+messages, optional image paths, and prompts through callbacks.</p>
+<p><code>XWalkLanguageModelOllama</code> provides the current concrete backend. It owns model selection, bounded history,
+optional image encoding, JSON conversion, libcurl HTTP transport, and provider error mapping. Endpoint, model,
+timeouts, request limits, and network policy must be selected by deployment. It is not composed by the CLI.</p>
+<h2 id="16-voice-assistant-composition">16. Voice-assistant composition<a class="headerlink" href="#16-voice-assistant-composition" title="Permanent link">&para;</a></h2>
+<p>One complete backend graph is constructed in this order:</p>
+<ol>
+<li>Shared <code>XWalkAudioAlsa</code> owner.</li>
+<li><code>XWalkSpeechToTextAlsa</code>, then neutral <code>XWalkSpeechToText</code>.</li>
+<li><code>XWalkLanguageModelOllama</code>, then neutral <code>XWalkLanguageModel</code>.</li>
+<li><code>XWalkTextToSpeechAlsa</code>, then neutral <code>XWalkTextToSpeech</code> with board control.</li>
+<li><code>XWalkCameraLinux</code>, <code>XWalkCamera</code>, and the camera Agent for voice-active modes.</li>
+<li><code>XWalkVoiceAssistant</code> last.</li>
+</ol>
+<p>The coordinator owns no microphone, model, network, speaker, trigger, or thread. It performs one synchronous
+round. Wake word and continuous scheduling remain application concerns. The
+voice-active CLI supplies image capture through the camera Agent.</p>
+<p>The full stack is covered by deterministic composition tests and opt-in bounded target tests. The CLI composes
+it for voice-chat and voice-active command groups.</p>
+<h2 id="17-linux-utility-backend">17. Linux utility backend<a class="headerlink" href="#17-linux-utility-backend" title="Permanent link">&para;</a></h2>
+<p><code>XWalkUtilsLinux</code> supplies ANSI output, PCM volume through <code>amixer</code>, shell-compatible command execution,
+direct <code>PATH</code> lookup, interface enumeration, effective-user lookup, and standard-error restoration.</p>
+<p>It never invokes <code>sudo</code>. Command text retains shell interpretation, so applications must validate and
+allowlist untrusted input before execution. The current CLI uses its own console and delay functions without
+composing this backend.</p>
+<h2 id="18-configuration-diagnostics-and-storage">18. Configuration, diagnostics, and storage<a class="headerlink" href="#18-configuration-diagnostics-and-storage" title="Permanent link">&para;</a></h2>
+<p><code>XWalkConfig</code> and <code>XWalkConfigStore</code> own filesystem paths and serialize operations performed through one
+object.
+They use same-directory replacement for updates and do not invoke privileged permission commands.</p>
+<p><code>XWalkTrace</code> forwards accepted severity records synchronously to an injected output callback. It has no
+physical backend and introduces no global logger.</p>
+<p>These modules need deployment-owned writable paths and application-level synchronization when multiple objects
+or processes share one file.</p>
+<h2 id="19-resource-lifetime-and-shutdown">19. Resource lifetime and shutdown<a class="headerlink" href="#19-resource-lifetime-and-shutdown" title="Permanent link">&para;</a></h2>
+<p>The required shutdown order is:</p>
+<ol>
+<li>Stop foreground loops and reject new commands.</li>
+<li>Stop voice, recognition, button, speaker, and other workers.</li>
+<li>Stop motors, disable active outputs, and close feature streams.</li>
+<li>Destroy Agent and service coordinators.</li>
+<li>Destroy sensors and actuators.</li>
+<li>Destroy GPIO and I2C front ends.</li>
+<li>Close ALSA, GPIO, I2C, network, and provider owners last.</li>
+</ol>
+<p>No worker may outlive its callback context. No destructor callback may throw.</p>
+<h2 id="20-verification-architecture">20. Verification architecture<a class="headerlink" href="#20-verification-architecture" title="Permanent link">&para;</a></h2>
+<p>Every hardware-facing module has deterministic host coverage, a disabled-by-default target option, or both.
+Software tests inject system-operation seams and do not require devices.</p>
+<p>Hardware builds may open or mutate resources when executed. Ordinary verification must only compile and list:</p>
+<pre><code class="language-bash">ctest --test-dir &lt;rpi-build-directory&gt; -N -L hardware
+</code></pre>
+<p>Never execute a hardware-labelled test without explicit approval and the correct safe physical setup.</p>
+<h2 id="21-backend-coverage-summary">21. Backend coverage summary<a class="headerlink" href="#21-backend-coverage-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Implementation status</th>
+<th>CLI status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I2C and GPIO</td>
+<td>Linux owners implemented</td>
+<td>Used by PiCar-X commands</td>
+</tr>
+<tr>
+<td>SPI</td>
+<td>Linux owner implemented</td>
+<td>Used by <code>spi transfer</code></td>
+</tr>
+<tr>
+<td>PWM, ADC, servo, motor</td>
+<td>Implemented over I2C and GPIO</td>
+<td>Used through PiCar-X</td>
+</tr>
+<tr>
+<td>Board discovery and reset</td>
+<td>Implemented</td>
+<td>Discovery and reset used at boot</td>
+</tr>
+<tr>
+<td>Shared ALSA</td>
+<td>Implemented</td>
+<td>Used by sound, self-drive, and voice commands</td>
+</tr>
+<tr>
+<td>Music ALSA</td>
+<td>Implemented</td>
+<td>Used by sound, self-drive, and voice-active actions</td>
+</tr>
+<tr>
+<td>Speaker ALSA</td>
+<td>Implemented</td>
+<td>Not connected to standalone <code>sound</code></td>
+</tr>
+<tr>
+<td>Speech to text</td>
+<td>ALSA capture and Vosk provider implemented</td>
+<td>Used by voice commands</td>
+</tr>
+<tr>
+<td>Text to speech</td>
+<td>Espeak synthesis and ALSA playback implemented</td>
+<td>Used by voice commands</td>
+</tr>
+<tr>
+<td>Language model</td>
+<td>Ollama and OpenAI-compatible HTTP backend</td>
+<td>Used by voice-chat and voice-active commands</td>
+</tr>
+<tr>
+<td>Voice assistant</td>
+<td>Full composition tested</td>
+<td>Used by voice-chat and voice-active commands</td>
+</tr>
+<tr>
+<td>Camera capture</td>
+<td>CSI and USB Linux providers implemented</td>
+<td>Used by voice-active commands</td>
+</tr>
+<tr>
+<td>Utils Linux</td>
+<td>Implemented</td>
+<td>Not composed</td>
+</tr>
+<tr>
+<td>ADXL345, LED, buzzer, robot, button</td>
+<td>Hardware path implemented</td>
+<td>No CLI commands</td>
+</tr>
+</tbody>
+</table>
+<h2 id="22-deployment-checklist">22. Deployment checklist<a class="headerlink" href="#22-deployment-checklist" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Confirm the connected HAT revision and active Device Tree overlay.</li>
+<li>Confirm <code>/dev/i2c-*</code>, <code>/dev/gpiochip*</code>, ALSA names, and access permissions.</li>
+<li>Confirm Robot HAT MCU and ADXL345 addresses before direct sensor tests.</li>
+<li>Confirm GPIO line mappings and overlay conflicts.</li>
+<li>Raise wheels and clear steering and camera travel before actuator tests.</li>
+<li>Start audio at conservative volume and use bounded fixtures.</li>
+<li>Approve microphone privacy and model endpoint policy before speech tests.</li>
+<li>Keep credentials outside source, command output, and normal diagnostics.</li>
+<li>Validate one backend at a time before combined application testing.</li>
+</ul>
+<h2 id="23-aggregate-hardware-status">23. Aggregate hardware status<a class="headerlink" href="#23-aggregate-hardware-status" title="Permanent link">&para;</a></h2>
+<p>The aggregate CMake graph references only modules present in the workspace. Raspberry Pi mode enables Linux
+I2C and GPIO, ALSA audio, native decoding, Vosk recognition, Espeak synthesis, and Ollama integration.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.sections", "navigation.top", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
