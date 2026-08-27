@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/wiki-tool/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/wiki-tool/">
       
       
         <link rel="prev" href="../gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/">
@@ -3095,7 +3095,7 @@ server for production access and point its document root at the generated <code>
 <pre><code class="language-bash">xWalk-rpi5-tool/doc-tool/wiki.sh github
 </code></pre>
 <p>The default site URL embedded in locally generated metadata is:</p>
-<pre><code class="language-text">https://TARS-v00-01.github.io/xWalkPiCarAI/
+<pre><code class="language-text">https://TARS-v00-01.github.io/releases/
 </code></pre>
 <p>Open the configured site URL after building:</p>
 <pre><code class="language-bash">xWalk-rpi5-tool/doc-tool/wiki.sh github --open
@@ -3105,7 +3105,7 @@ server for production access and point its document root at the generated <code>
 <pre><code class="language-bash">xWalk-rpi5-tool/doc-tool/wiki.sh github --site-url https://docs.example.org/xwalk/
 </code></pre>
 <p>The <code>github</code> profile only creates <code>build-devloper-note-wiki/github-site</code>; it never pushes. After an approved Gerrit
-integration commit is submitted and synchronized to <code>TARS-v00-01/xWalkPiCarAI/master</code>, the
+integration commit is submitted and synchronized to <code>TARS-v00-01/releases/master</code>, the
 <code>developer-note-pages.yml</code> workflow builds the site once and uploads it as a private GitHub Actions artifact.
 Authorized organization members can download the artifact from the workflow run. The artifact is retained for 30
 days and does not publish a website.</p>

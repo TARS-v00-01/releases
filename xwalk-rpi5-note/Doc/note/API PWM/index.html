@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/API%20PWM/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/xwalk-rpi5-note/Doc/note/API%20PWM/">
       
       
         <link rel="prev" href="../API%20Music/">
@@ -2905,9 +2905,9 @@
 <p><code>XWalkPwm</code> controls one MCU PWM channel. <code>XWalkPwmTimerState</code> coordinates the
 frequency and period shared by channels assigned to one hardware timer.</p>
 <h2 id="public-interface">Public interface<a class="headerlink" href="#public-interface" title="Permanent link">&para;</a></h2>
-<p>See <a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/README.md">xWalkPwm</a>,
-<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/include/xHal_Rpi5CarPwm.h"><code>xHal_Rpi5CarPwm.h</code></a>, and
-<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/include/xHal_Rpi5CarPwmTimerState.h">timer-state header</a>.</p>
+<p>See <a href="https://github.com/TARS-v00-01/releases/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/README.md">xWalkPwm</a>,
+<a href="https://github.com/TARS-v00-01/releases/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/include/xHal_Rpi5CarPwm.h"><code>xHal_Rpi5CarPwm.h</code></a>, and
+<a href="https://github.com/TARS-v00-01/releases/blob/master/xWalk-rpi5-hw/xWalkHal/device/xWalkPwm/include/xHal_Rpi5CarPwmTimerState.h">timer-state header</a>.</p>
 <p>Create one timer-state object before all PWM channels that use it. A frequency
 change that conflicts with an active sibling channel is rejected. Pulse values
 must remain within the configured period.</p>

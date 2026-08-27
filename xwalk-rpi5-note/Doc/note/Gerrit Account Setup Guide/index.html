@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/Gerrit%20Account%20Setup%20Guide/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/xwalk-rpi5-note/Doc/note/Gerrit%20Account%20Setup%20Guide/">
       
       
         <link rel="prev" href="../Features/">
@@ -3168,7 +3168,7 @@ git commit
 <p>Do not push the review commit directly to GitHub before Gerrit review and verification are complete. Uploading
 a new commit with the same <code>Change-Id</code> creates another patch set in the existing review.</p>
 <p>After an approved and verified change is submitted, the Gerrit CI service publishes it to GitHub. Only Joxy
-(<code>joxjoh24@student.hh.se</code>) may merge into GitHub <code>master</code>. A directly applicable Joxy-owned change may be
+(<code>developer@example.com</code>) may merge into GitHub <code>master</code>. A directly applicable Joxy-owned change may be
 fast-forwarded to <code>master</code>. Every other owner's change is pushed to <code>gerrit-submitted</code>, where GitHub automation
 opens or updates a pull request for Joxy. The same pull-request path is used for stacked changes when a direct
 update would include work that still requires Joxy's GitHub review. Developers must not manually repeat either

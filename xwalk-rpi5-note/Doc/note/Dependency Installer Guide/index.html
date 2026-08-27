@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/Dependency%20Installer%20Guide/">
+        <link rel="canonical" href="https://tars-v00-01.github.io/releases/xwalk-rpi5-note/Doc/note/Dependency%20Installer%20Guide/">
       
       
         <link rel="prev" href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/">
@@ -3408,7 +3408,7 @@ that has not been reviewed into the repository.</p>
 <code>xWalk-rpi5-hw/xWalkLibrary/common</code>. Each native prefix uses the conventional <code>bin</code>, <code>include</code>, <code>lib</code>, and <code>share</code> layout.
 Compilers, build tools, Linux kernel interfaces, ALSA integration, udev rules, camera tools, Device Tree
 overlays, system services, and package managers remain system-installed. See
-<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkLibrary/README.md"><code>xWalk-rpi5-hw/xWalkLibrary/README.md</code></a> for inventory and overrides.</p>
+<a href="https://github.com/TARS-v00-01/releases/blob/master/xWalk-rpi5-hw/xWalkLibrary/README.md"><code>xWalk-rpi5-hw/xWalkLibrary/README.md</code></a> for inventory and overrides.</p>
 <p>The root build follows this dependency flow:</p>
 <pre><code class="language-text">MyPiCarX
 ├── xWalkLibrary
@@ -3604,7 +3604,7 @@ package:</p>
 <p>Runtime utilities such as <code>alsa-utils</code>, <code>espeak-ng</code>, <code>libttspico-utils</code>, <code>i2c-tools</code>, <code>gpiod</code>,
 <code>rpicam-apps</code>, <code>ffmpeg</code>, Ollama, and Vosk are deployment dependencies, not CMake library-discovery
 requirements. See
-<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/scripts/integration/apt-packages.txt"><code>scripts/integration/apt-packages.txt</code></a> for the complete build and runtime package
+<a href="https://github.com/TARS-v00-01/releases/blob/master/scripts/integration/apt-packages.txt"><code>scripts/integration/apt-packages.txt</code></a> for the complete build and runtime package
 map.</p>
 <p>The package commands above are the system fallback. GoogleTest, json-c, TinyXML2, yaml-cpp, Protobuf, gRPC,
 and libsndfile can instead be supplied under the selected native <code>xWalkLibrary</code>
