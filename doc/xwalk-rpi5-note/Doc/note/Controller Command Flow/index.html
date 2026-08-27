@@ -1,0 +1,3473 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture, PiCar-X, Gerrit, CI, and deployment notes for xWalk.">
+      
+      
+      
+        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/Controller%20Command%20Flow/">
+      
+      
+        <link rel="prev" href="../Community%20Tutorials/">
+      
+      
+        <link rel="next" href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>xWalk Controller Command Flow - xWalk Developer Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xwalk-controller-command-flow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-header__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xWalk Developer Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              xWalk Controller Command Flow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-nav__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xWalk Developer Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerrit note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit developer notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2_1" id="__nav_2_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20CI%20Changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene CI changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20Code%20Health%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene Code Health CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Admin%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit admin setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Administrator%20Request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit administrator request
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Backup%20and%20Restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit backup and restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20CI%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit CI configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Local%20Linux%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit local Linux setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Multi%20Repository%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit multi-repository architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Security%20and%20Remote%20Access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit security and remote access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Server%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit server overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Setup%20Installer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit setup installer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Storage%20and%20Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit storage and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20User%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit user configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Integrated%20Uplift%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrated uplift workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/TARS-v00-01%20Submit-Gated%20Mirrors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TARS-v00-01 submit-gated mirrors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Git cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki tool
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wiki tool
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../wiki-tool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes Wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xwalk rpi5 note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Xwalk rpi5 note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk C++ Documentation Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_1" id="__nav_4_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20ADC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkAdc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Basic%20Class/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkTrace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Filedb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkConfigStore and XWalkConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20I2C/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkI2c
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors and actuators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Motor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMotor and XWalkMotors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Music/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMusic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20PWM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkPwm and XWalkPwmTimerState
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Pin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkGpio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Robot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkRobot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkServo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20TTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ speech interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ utility interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Add%20a%20User%20to%20a%20Gerrit%20Repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Add a User to a Gerrit Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Battery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the battery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CLI%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk CLI architecture and HAL integration plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Clean%20Build%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Build Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Community%20Tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community C++ adaptations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Controller Command Flow
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Controller Command Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-raspberry-pi-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Raspberry Pi path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-and-isolated-service-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform and isolated-service commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-vehicle-and-sensor-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct vehicle and sensor commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autonomous-vehicle-and-media-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autonomous vehicle and media commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vision-and-connectivity-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vision and connectivity commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voice-and-language-model-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voice and language-model commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calibration-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration command
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#terminal-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal outcomes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Create Gerrit and Configure xWalk CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependency%20Installer%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMake Dependency Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependency%20Installer%20Script%20Flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Installer Script Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Deployment%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Deployment Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Device%20Tree%20Overlay%20Assets%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Tree Overlay Assets Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQ/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety and troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Account%20Setup%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit Account Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HAL%20Arcithure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk high-level architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HAL%20Hardware%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk HAL hardware and backend architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Provisioning%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Provisioning Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Coverage%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host Coverage Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Production%20Readiness%20Work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host production readiness work
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Firmware Robot HAT documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Install%20I2S%20for%20Speaker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure I2S for the speaker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Jarvis%20and%20Gemini%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Jarvis and Optional Gemini Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Language%20Model%20Provider%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language-Model Provider Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../License%20Key%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence-Key Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Onboard%20MCU/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Onboard MCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PiCar-X%20Controller%20Command%20Reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PiCar-X Controller Command Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Control%20Motor%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control servos and motors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20DIY%20Car/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ line-following car
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Photoresistor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read a photoresistor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Plant%20Monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ plant monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Say%20Something/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produce speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ security-system composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Ultrasonic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read ultrasonic distance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ project examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%205%20PiCar-X%20Readiness%20Audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi 5 and PiCar-X Readiness Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%20Setup%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Setup Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release%20Acceptance%20Checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release acceptance checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Environment%20Loader%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk environment loader guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Licence Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Tool%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk licence tool guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk-rpi5-tool%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk-rpi5-tool Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-raspberry-pi-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Raspberry Pi path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-and-isolated-service-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform and isolated-service commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-vehicle-and-sensor-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct vehicle and sensor commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#autonomous-vehicle-and-media-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autonomous vehicle and media commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vision-and-connectivity-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vision and connectivity commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voice-and-language-model-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voice and language-model commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calibration-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calibration command
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#terminal-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal outcomes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="xwalk-controller-command-flow">xWalk Controller Command Flow<a class="headerlink" href="#xwalk-controller-command-flow" title="Permanent link">&para;</a></h1>
+<p>This document traces every <code>xwalk-picarx-control</code> command from terminal input to its final Raspberry Pi
+hardware, local service, file, or network boundary. It reflects the current Controller, Agent, boot, and HAL
+composition.</p>
+<p>The host executable follows the same parsing and handler path but uses host-owned test or stub services. Only
+the Raspberry Pi executable creates Linux hardware backends.</p>
+<h2 id="common-raspberry-pi-path">Common Raspberry Pi path<a class="headerlink" href="#common-raspberry-pi-path" title="Permanent link">&para;</a></h2>
+<p>Help is handled before boot and therefore claims no device. Every other command first selects its minimum boot
+graph from the command name. The complete command is converted into a typed request only after the selected
+services are alive inside the synchronous boot callback.</p>
+<pre><code class="language-mermaid">flowchart TD
+    terminal[&quot;Terminal: xwalk-picarx-control COMMAND&quot;]
+    global[&quot;Parse global deployment and resource options&quot;]
+    helpCheck{&quot;Help request?&quot;}
+    help[&quot;Generate usage text and exit without boot&quot;]
+    bootMode[&quot;XWALK_selectBootMode: command name to boot macro&quot;]
+    config[&quot;Load picar-x.conf and included fragments&quot;]
+    boot[&quot;XWalkBootRpi: create only the selected service graph&quot;]
+    callback[&quot;XWALK_runController: bind services to XWalkController&quot;]
+    parser[&quot;XWALK_parseControllerCommand: command request macro&quot;]
+    request[&quot;Command-specific parser: validated typed request DTO&quot;]
+    handler[&quot;XWALK_handler command function&quot;]
+    agent[&quot;Command-specific Agent or XWalkPicarx operation&quot;]
+    hal[&quot;HAL coordinator and Linux backend&quot;]
+    endpoint[&quot;Hardware, local file/process, or network endpoint&quot;]
+    cleanup[&quot;Safety guard, service shutdown, and reverse-order teardown&quot;]
+
+    terminal --&gt; global
+    global --&gt; helpCheck
+    helpCheck -- Yes --&gt; help
+    helpCheck -- No --&gt; bootMode
+    bootMode --&gt; config
+    config --&gt; boot
+    boot --&gt; callback
+    callback --&gt; parser
+    parser --&gt; request
+    request --&gt; handler
+    handler --&gt; agent
+    agent --&gt; hal
+    hal --&gt; endpoint
+    endpoint --&gt; cleanup
+</code></pre>
+<p>Invalid global options stop before boot. An unsupported command, malformed payload, out-of-range value, or
+missing command-specific service stops before the requested operation reaches its endpoint. Commands using the
+PiCar-X graph also receive a command-scope emergency-stop guard.</p>
+<p>The current boot selector returns <code>XWALK_BOOT_BASE_REQ</code> for an empty or unknown command name. Consequently, the
+RPi executable can construct the base hardware graph before the typed parser rejects that command. This is a
+known command-boundary limitation; only supported command names should be passed to a deployed controller.</p>
+<h2 id="platform-and-isolated-service-commands">Platform and isolated-service commands<a class="headerlink" href="#platform-and-isolated-service-commands" title="Permanent link">&para;</a></h2>
+<p>These commands deliberately bypass the complete PiCar-X motor graph unless their documented service needs it.</p>
+<pre><code class="language-mermaid">flowchart LR
+    help[&quot;-h, --help, help&quot;]
+    helpParser[&quot;XWALK_CNTRL_HELP_REQ&quot;]
+    helpHandler[&quot;XWALK_controllerUsage&quot;]
+    console[&quot;Standard output; no boot or hardware&quot;]
+    help --&gt; helpParser --&gt; helpHandler --&gt; console
+
+    doctor[&quot;doctor&quot;]
+    doctorBoot[&quot;XWALK_BOOT_DOCTOR_REQ&quot;]
+    doctorRequest[&quot;XWalkNoArgumentRequest&quot;]
+    doctorHandler[&quot;XWALK_handlerDoctor&quot;]
+    doctorAgent[&quot;XWalkDoctorLinux inspection&quot;]
+    doctorEnd[&quot;Read-only system, configuration, and device metadata&quot;]
+    doctor --&gt; doctorBoot --&gt; doctorRequest --&gt; doctorHandler
+    doctorHandler --&gt; doctorAgent --&gt; doctorEnd
+
+    spi[&quot;spi transfer HEX&quot;]
+    spiBoot[&quot;XWALK_BOOT_SPI_TRANSFER_REQ&quot;]
+    spiRequest[&quot;XWalkSpiRequest: transmitData&quot;]
+    spiHandler[&quot;XWALK_handlerSpi&quot;]
+    spiAgent[&quot;XWalkSpiTransfer&quot;]
+    spiHal[&quot;XWalkSpi and XWalkSpiLinux&quot;]
+    spiEnd[&quot;Configured /dev/spidev endpoint&quot;]
+    spi --&gt; spiBoot --&gt; spiRequest --&gt; spiHandler
+    spiHandler --&gt; spiAgent --&gt; spiHal --&gt; spiEnd
+
+    zero[&quot;servo-zeroing&quot;]
+    zeroBoot[&quot;XWALK_BOOT_SERVO_ZEROING_REQ&quot;]
+    zeroRequest[&quot;XWalkNoArgumentRequest&quot;]
+    zeroHandler[&quot;XWALK_handlerServoZeroing&quot;]
+    zeroAgent[&quot;XWalkServoZeroing&quot;]
+    zeroHal[&quot;XWalkServo, XWalkPwm, and XWalkI2cLinux&quot;]
+    zeroEnd[&quot;Robot HAT PWM channels 0 through 11&quot;]
+    zero --&gt; zeroBoot --&gt; zeroRequest --&gt; zeroHandler
+    zeroHandler --&gt; zeroAgent --&gt; zeroHal --&gt; zeroEnd
+</code></pre>
+<p><code>doctor</code> may open configured descriptors and read metadata, firmware, or battery information. It does not reset
+the MCU, request output GPIO lines, transfer SPI payloads, enable audio, capture media, or contact a model.</p>
+<h2 id="direct-vehicle-and-sensor-commands">Direct vehicle and sensor commands<a class="headerlink" href="#direct-vehicle-and-sensor-commands" title="Permanent link">&para;</a></h2>
+<p>These commands use <code>XWALK_BOOT_BASE_REQ</code> unless a specialized graph is shown. Their typed requests prevent raw
+command strings from reaching PiCar-X or HAL objects.</p>
+<pre><code class="language-mermaid">flowchart LR
+    move[&quot;move forward, backward, or demo&quot;]
+    moveReq[&quot;XWalkMoveRequest&quot;]
+    moveHandler[&quot;XWALK_handlerMove&quot;]
+    moveAgent[&quot;XWalkPicarx or XWalkMoveExample&quot;]
+    moveOut[&quot;Motor PWM, steering servo, and optional camera servos&quot;]
+    move --&gt; moveReq --&gt; moveHandler --&gt; moveAgent --&gt; moveOut
+
+    keyboard[&quot;keyboard-control&quot;]
+    keyboardReq[&quot;XWalkNoArgumentRequest&quot;]
+    keyboardHandler[&quot;XWALK_handlerKeyboardControl&quot;]
+    keyboardAgent[&quot;XWalkKeyboardControl&quot;]
+    keyboardOut[&quot;Motor PWM and steering or camera servos&quot;]
+    keyboard --&gt; keyboardReq --&gt; keyboardHandler --&gt; keyboardAgent --&gt; keyboardOut
+
+    avoid[&quot;avoid-obstacles start or stop&quot;]
+    avoidReq[&quot;XWalkLifecycleRequest&quot;]
+    avoidHandler[&quot;XWALK_handlerObstacleAvoidance&quot;]
+    avoidAgent[&quot;XWalkObstacleAvoidance and XWalkPicarx&quot;]
+    avoidOut[&quot;Ultrasonic GPIO input plus motors and steering&quot;]
+    avoid --&gt; avoidReq --&gt; avoidHandler --&gt; avoidAgent --&gt; avoidOut
+
+    cliff[&quot;cliff-detection start or stop&quot;]
+    cliffReq[&quot;XWalkLifecycleRequest&quot;]
+    cliffHandler[&quot;XWALK_handlerCliffDetection&quot;]
+    cliffAgent[&quot;XWalkCliffDetection and XWalkPicarx&quot;]
+    cliffOut[&quot;Three ADC grayscale channels plus motors&quot;]
+    cliff --&gt; cliffReq --&gt; cliffHandler --&gt; cliffAgent --&gt; cliffOut
+
+    turn[&quot;turn left or right&quot;]
+    turnReq[&quot;XWalkTurnRequest&quot;]
+    turnHandler[&quot;XWALK_handlerTurn&quot;]
+    turnAgent[&quot;XWalkPicarx steering and bounded movement&quot;]
+    turnOut[&quot;Direction servo and motor PWM&quot;]
+    turn --&gt; turnReq --&gt; turnHandler --&gt; turnAgent --&gt; turnOut
+
+    camera[&quot;cam pan or tilt&quot;]
+    cameraReq[&quot;XWalkCameraRequest&quot;]
+    cameraHandler[&quot;XWALK_handlerCamera&quot;]
+    cameraAgent[&quot;XWalkPicarx camera-servo operation&quot;]
+    cameraOut[&quot;Pan or tilt PWM servo&quot;]
+    camera --&gt; cameraReq --&gt; cameraHandler --&gt; cameraAgent --&gt; cameraOut
+
+    sensor[&quot;sensor distance or grayscale&quot;]
+    sensorReq[&quot;XWalkSensorRequest&quot;]
+    sensorHandler[&quot;XWALK_handlerSensor&quot;]
+    sensorAgent[&quot;XWalkPicarx sensing&quot;]
+    sensorOut[&quot;Ultrasonic GPIO or three ADC channels&quot;]
+    sensor --&gt; sensorReq --&gt; sensorHandler --&gt; sensorAgent --&gt; sensorOut
+</code></pre>
+<h2 id="autonomous-vehicle-and-media-commands">Autonomous vehicle and media commands<a class="headerlink" href="#autonomous-vehicle-and-media-commands" title="Permanent link">&para;</a></h2>
+<pre><code class="language-mermaid">flowchart LR
+    line[&quot;line-track start or stop&quot;]
+    lineBoot[&quot;XWALK_BOOT_LINE_TRACKING_REQ&quot;]
+    lineReq[&quot;XWalkLifecycleRequest&quot;]
+    lineHandler[&quot;XWALK_handlerLineTracking&quot;]
+    lineAgent[&quot;XWalkLineTracking and XWalkPicarx&quot;]
+    lineOut[&quot;Grayscale ADC, steering servo, and motor PWM&quot;]
+    line --&gt; lineBoot --&gt; lineReq --&gt; lineHandler --&gt; lineAgent --&gt; lineOut
+
+    self[&quot;self-drive ACTION&quot;]
+    selfBoot[&quot;XWALK_BOOT_SELF_DRIVE_REQ&quot;]
+    selfReq[&quot;XWalkSelfDriveRequest&quot;]
+    selfHandler[&quot;XWALK_handlerSelfDrive&quot;]
+    selfAgent[&quot;XWalkSelfDrive and XWalkPicarx&quot;]
+    selfOut[&quot;Motors, servos, ALSA output, and packaged sounds&quot;]
+    self --&gt; selfBoot --&gt; selfReq --&gt; selfHandler --&gt; selfAgent --&gt; selfOut
+
+    sound[&quot;sound play, volume, music, or stop&quot;]
+    soundBoot[&quot;XWALK_BOOT_SOUND_REQ&quot;]
+    soundReq[&quot;XWalkSoundRequest&quot;]
+    soundHandler[&quot;XWALK_handlerSound&quot;]
+    soundAgent[&quot;Controller sound callback and XWalkMusic&quot;]
+    soundOut[&quot;ALSA PCM or mixer and packaged audio file&quot;]
+    sound --&gt; soundBoot --&gt; soundReq --&gt; soundHandler --&gt; soundAgent --&gt; soundOut
+
+    background[&quot;sound-background-music&quot;]
+    backgroundBoot[&quot;XWALK_BOOT_SOUND_BACKGROUND_MUSIC_REQ&quot;]
+    backgroundReq[&quot;XWalkNoArgumentRequest&quot;]
+    backgroundHandler[&quot;XWALK_handlerSoundBackgroundMusic&quot;]
+    backgroundAgent[&quot;XWalkSoundBackgroundMusic and XWalkMusic&quot;]
+    backgroundOut[&quot;ALSA output and packaged sound or music files&quot;]
+    background --&gt; backgroundBoot --&gt; backgroundReq --&gt; backgroundHandler
+    backgroundHandler --&gt; backgroundAgent --&gt; backgroundOut
+</code></pre>
+<h2 id="vision-and-connectivity-commands">Vision and connectivity commands<a class="headerlink" href="#vision-and-connectivity-commands" title="Permanent link">&para;</a></h2>
+<pre><code class="language-mermaid">flowchart LR
+    vision[&quot;computer-vision&quot;]
+    visionBoot[&quot;XWALK_BOOT_COMPUTER_VISION_REQ&quot;]
+    visionReq[&quot;XWalkNoArgumentRequest&quot;]
+    visionHandler[&quot;XWALK_handlerComputerVision&quot;]
+    visionAgent[&quot;XWalkComputerVision and OpenCV provider&quot;]
+    visionOut[&quot;Configured camera and photograph directory&quot;]
+    vision --&gt; visionBoot --&gt; visionReq --&gt; visionHandler --&gt; visionAgent --&gt; visionOut
+
+    face[&quot;stare-at-you start or stop&quot;]
+    faceBoot[&quot;XWALK_BOOT_FACE_TRACKING_REQ&quot;]
+    faceReq[&quot;XWalkLifecycleRequest&quot;]
+    faceHandler[&quot;XWALK_handlerFaceTracking&quot;]
+    faceAgent[&quot;XWalkFaceTracking and OpenCV provider&quot;]
+    faceOut[&quot;Camera, camera servos, and motor cleanup&quot;]
+    face --&gt; faceBoot --&gt; faceReq --&gt; faceHandler --&gt; faceAgent --&gt; faceOut
+
+    bull[&quot;bull-fight start or stop&quot;]
+    bullBoot[&quot;XWALK_BOOT_BULL_FIGHT_REQ&quot;]
+    bullReq[&quot;XWalkLifecycleRequest&quot;]
+    bullHandler[&quot;XWALK_handlerBullFight&quot;]
+    bullAgent[&quot;XWalkBullFight and OpenCV provider&quot;]
+    bullOut[&quot;Camera, camera and steering servos, and motor PWM&quot;]
+    bull --&gt; bullBoot --&gt; bullReq --&gt; bullHandler --&gt; bullAgent --&gt; bullOut
+
+    treasure[&quot;treasure-hunt&quot;]
+    treasureBoot[&quot;XWALK_BOOT_TREASURE_HUNT_REQ&quot;]
+    treasureReq[&quot;XWalkNoArgumentRequest&quot;]
+    treasureHandler[&quot;XWALK_handlerTreasureHunt&quot;]
+    treasureAgent[&quot;XWalkTreasureHunt, OpenCV, and Pico2Wave&quot;]
+    treasureOut[&quot;Camera, motors, steering, speaker, and audio process&quot;]
+    treasure --&gt; treasureBoot --&gt; treasureReq --&gt; treasureHandler
+    treasureHandler --&gt; treasureAgent --&gt; treasureOut
+
+    record[&quot;record-video&quot;]
+    recordBoot[&quot;XWALK_BOOT_VIDEO_RECORDING_REQ&quot;]
+    recordReq[&quot;XWalkNoArgumentRequest&quot;]
+    recordHandler[&quot;XWALK_handlerVideoRecording&quot;]
+    recordAgent[&quot;XWalkVideoRecording and OpenCV provider&quot;]
+    recordOut[&quot;Configured camera and AVI output directory&quot;]
+    record --&gt; recordBoot --&gt; recordReq --&gt; recordHandler --&gt; recordAgent --&gt; recordOut
+
+    video[&quot;video-car&quot;]
+    videoBoot[&quot;XWALK_BOOT_VIDEO_CAR_REQ&quot;]
+    videoReq[&quot;XWalkNoArgumentRequest&quot;]
+    videoHandler[&quot;XWALK_handlerVideoCar&quot;]
+    videoAgent[&quot;XWalkVideoCar and OpenCV provider&quot;]
+    videoOut[&quot;Camera, photograph files, motors, and steering&quot;]
+    video --&gt; videoBoot --&gt; videoReq --&gt; videoHandler --&gt; videoAgent --&gt; videoOut
+
+    app[&quot;app-control start or stop&quot;]
+    appBoot[&quot;XWALK_BOOT_APP_CONTROL_REQ&quot;]
+    appReq[&quot;XWalkLifecycleRequest&quot;]
+    appHandler[&quot;XWALK_handlerAppControl&quot;]
+    appAgent[&quot;XWalkAppControl and WebSocket provider&quot;]
+    appOut[&quot;Configured socket, camera, audio, motors, and servos&quot;]
+    app --&gt; appBoot --&gt; appReq --&gt; appHandler --&gt; appAgent --&gt; appOut
+</code></pre>
+<h2 id="voice-and-language-model-commands">Voice and language-model commands<a class="headerlink" href="#voice-and-language-model-commands" title="Permanent link">&para;</a></h2>
+<p>Credentials are read only from the configured environment-variable names. Secret values never become request
+DTO members and are not displayed by these paths.</p>
+<pre><code class="language-mermaid">flowchart LR
+    chat[&quot;voice-chat start or stop&quot;]
+    chatBoot[&quot;XWALK_BOOT_VOICE_CHAT_REQ&quot;]
+    chatReq[&quot;XWalkLifecycleRequest&quot;]
+    chatHandler[&quot;XWALK_handlerVoiceChat&quot;]
+    chatAgent[&quot;XWalkLocalVoiceChatbot and XWalkVoiceAssistant&quot;]
+    chatOut[&quot;ALSA microphone, Vosk, local Ollama, Piper, and speaker&quot;]
+    chat --&gt; chatBoot --&gt; chatReq --&gt; chatHandler --&gt; chatAgent --&gt; chatOut
+
+    rolly[&quot;voice-active-car start or stop&quot;]
+    rollyBoot[&quot;XWALK_BOOT_VOICE_ACTIVE_CAR_REQ&quot;]
+    rollyReq[&quot;XWalkLifecycleRequest&quot;]
+    rollyHandler[&quot;XWALK_handlerVoiceActiveCar&quot;]
+    rollyAgent[&quot;XWalkVoiceActiveCar Rolly profile&quot;]
+    rollyOut[&quot;Mic, Vosk, OpenAI, TTS, camera, LED, sensors, motors, and servos&quot;]
+    rolly --&gt; rollyBoot --&gt; rollyReq --&gt; rollyHandler --&gt; rollyAgent --&gt; rollyOut
+
+    buddy[&quot;voice-active-car-gpt start or stop&quot;]
+    buddyBoot[&quot;XWALK_BOOT_VOICE_ACTIVE_CAR_GPT_REQ&quot;]
+    buddyReq[&quot;XWalkLifecycleRequest&quot;]
+    buddyHandler[&quot;XWALK_handlerVoiceActiveCar&quot;]
+    buddyAgent[&quot;XWalkVoiceActiveCar Buddy profile&quot;]
+    buddyOut[&quot;Mic, Vosk, OpenAI, Piper, camera, LED, sensors, motors, and servos&quot;]
+    buddy --&gt; buddyBoot --&gt; buddyReq --&gt; buddyHandler --&gt; buddyAgent --&gt; buddyOut
+
+    gpt[&quot;gpt-car start or stop with input flags&quot;]
+    gptBoot[&quot;XWALK_BOOT_GPT_CAR_REQ&quot;]
+    gptReq[&quot;XWalkGptCarRequest&quot;]
+    gptHandler[&quot;XWALK_handlerGptCar&quot;]
+    gptAgent[&quot;XWalkGptCar over voice-active and SelfDrive services&quot;]
+    gptOut[&quot;Keyboard or mic, OpenAI, camera, audio, LED, motors, and servos&quot;]
+    gpt --&gt; gptBoot --&gt; gptReq --&gt; gptHandler --&gt; gptAgent --&gt; gptOut
+
+    controlled[&quot;voice-controlled-car start or stop&quot;]
+    controlledBoot[&quot;XWALK_BOOT_VOICE_CONTROLLED_CAR_REQ&quot;]
+    controlledReq[&quot;XWalkLifecycleRequest&quot;]
+    controlledHandler[&quot;XWALK_handlerVoiceControlledCar&quot;]
+    controlledAgent[&quot;XWalkVoiceControlledCar&quot;]
+    controlledOut[&quot;ALSA microphone, Vosk, motor PWM, and steering servo&quot;]
+    controlled --&gt; controlledBoot --&gt; controlledReq --&gt; controlledHandler
+    controlledHandler --&gt; controlledAgent --&gt; controlledOut
+
+    prompt[&quot;voice-prompt-car start or stop&quot;]
+    promptBoot[&quot;XWALK_BOOT_VOICE_PROMPT_CAR_REQ&quot;]
+    promptReq[&quot;XWalkLifecycleRequest&quot;]
+    promptHandler[&quot;XWALK_handlerVoicePromptCar&quot;]
+    promptAgent[&quot;XWalkVoicePromptCar&quot;]
+    promptOut[&quot;Espeak, ALSA speaker, motor PWM, and steering servo&quot;]
+    prompt --&gt; promptBoot --&gt; promptReq --&gt; promptHandler --&gt; promptAgent --&gt; promptOut
+
+    story[&quot;storytelling-robot start or stop&quot;]
+    storyBoot[&quot;XWALK_BOOT_STORYTELLING_ROBOT_REQ&quot;]
+    storyReq[&quot;XWalkLifecycleRequest&quot;]
+    storyHandler[&quot;XWALK_handlerStorytellingRobot&quot;]
+    storyAgent[&quot;XWalkStorytellingRobot&quot;]
+    storyOut[&quot;Piper, audio playback, motor PWM, and steering servo&quot;]
+    story --&gt; storyBoot --&gt; storyReq --&gt; storyHandler --&gt; storyAgent --&gt; storyOut
+
+    textVision[&quot;text-vision-talk start or stop&quot;]
+    textVisionBoot[&quot;XWALK_BOOT_TEXT_VISION_TALK_REQ&quot;]
+    textVisionReq[&quot;XWalkLifecycleRequest&quot;]
+    textVisionHandler[&quot;XWALK_handlerTextVisionTalk&quot;]
+    textVisionAgent[&quot;XWalkTextVisionTalk&quot;]
+    textVisionOut[&quot;Still camera, image file, and local Ollama vision model&quot;]
+    textVision --&gt; textVisionBoot --&gt; textVisionReq --&gt; textVisionHandler
+    textVisionHandler --&gt; textVisionAgent --&gt; textVisionOut
+
+    online[&quot;online-llm-test start or stop&quot;]
+    onlineBoot[&quot;XWALK_BOOT_ONLINE_LLM_TEST_REQ&quot;]
+    onlineReq[&quot;XWalkLifecycleRequest&quot;]
+    onlineHandler[&quot;XWALK_handlerOnlineLlmTest&quot;]
+    onlineAgent[&quot;XWalkOnlineLlmTest&quot;]
+    onlineOut[&quot;Configured HTTPS model endpoint; no vehicle hardware&quot;]
+    online --&gt; onlineBoot --&gt; onlineReq --&gt; onlineHandler --&gt; onlineAgent --&gt; onlineOut
+</code></pre>
+<h2 id="calibration-command">Calibration command<a class="headerlink" href="#calibration-command" title="Permanent link">&para;</a></h2>
+<p>Calibration uses the base PiCar-X boot graph. It may move actuators and motors, read sensors, and persist
+validated values through <code>XWalkConfigStore</code>.</p>
+<pre><code class="language-mermaid">flowchart LR
+    calibration[&quot;calibrate, calibrate grayscale, or calibrate servo-motor&quot;]
+    calibrationBoot[&quot;XWALK_BOOT_BASE_REQ&quot;]
+    calibrationReq[&quot;XWalkCalibrationRequest&quot;]
+    calibrationHandler[&quot;XWALK_handlerCalibration&quot;]
+    calibrationAgents[&quot;GrayscaleCalibration and ServoMotorCalibration&quot;]
+    calibrationHal[&quot;XWalkPicarx, ADC, PWM, servo, motor, and ConfigStore&quot;]
+    calibrationOut[&quot;Physical checks plus persisted calibration overrides&quot;]
+
+    calibration --&gt; calibrationBoot --&gt; calibrationReq --&gt; calibrationHandler
+    calibrationHandler --&gt; calibrationAgents --&gt; calibrationHal --&gt; calibrationOut
+</code></pre>
+<p>The complete calibration flow is safety-sensitive. Motor-direction verification must be performed with the
+vehicle raised so its wheels cannot contact the ground.</p>
+<h2 id="terminal-outcomes">Terminal outcomes<a class="headerlink" href="#terminal-outcomes" title="Permanent link">&para;</a></h2>
+<pre><code class="language-mermaid">flowchart TD
+    request[&quot;Validated command request&quot;]
+    available{&quot;Selected service available?&quot;}
+    execute[&quot;Execute handler and endpoint operation&quot;]
+    unavailable[&quot;Return status 3: backend unavailable&quot;]
+    valid{&quot;Operation completes successfully?&quot;}
+    success[&quot;Return status 0&quot;]
+    reported[&quot;Return command-specific nonzero status&quot;]
+    cleanup[&quot;Stop active work and destroy boot graph in reverse order&quot;]
+
+    request --&gt; available
+    available -- No --&gt; unavailable
+    available -- Yes --&gt; execute
+    execute --&gt; valid
+    valid -- Yes --&gt; success
+    valid -- No --&gt; reported
+    unavailable --&gt; cleanup
+    success --&gt; cleanup
+    reported --&gt; cleanup
+</code></pre>
+<p>Exceptions from validation or backend failures propagate to the process boundary after automatic objects begin
+their reverse-order cleanup. PiCar-X command paths additionally use the emergency-stop safety guard.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.sections", "navigation.top", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

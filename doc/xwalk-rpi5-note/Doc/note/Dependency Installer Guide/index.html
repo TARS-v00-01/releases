@@ -1,0 +1,3847 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture, PiCar-X, Gerrit, CI, and deployment notes for xWalk.">
+      
+      
+      
+        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/xwalk-rpi5-note/Doc/note/Dependency%20Installer%20Guide/">
+      
+      
+        <link rel="prev" href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/">
+      
+      
+        <link rel="next" href="../Dependency%20Installer%20Script%20Flags/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CMake Dependency Guide - xWalk Developer Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cmake-dependency-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-header__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xWalk Developer Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CMake Dependency Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-nav__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xWalk Developer Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerrit note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit developer notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2_1" id="__nav_2_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20CI%20Changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene CI changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/CodeScene%20Code%20Health%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene Code Health CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Admin%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit admin setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Administrator%20Request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit administrator request
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Backup%20and%20Restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit backup and restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20CI%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit CI configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Local%20Linux%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit local Linux setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Multi%20Repository%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit multi-repository architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Security%20and%20Remote%20Access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit security and remote access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Server%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit server overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Setup%20Installer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit setup installer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Storage%20and%20Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit storage and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20Troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Gerrit%20User%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit user configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/Integrated%20Uplift%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrated uplift workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/TARS-v00-01%20Submit-Gated%20Mirrors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TARS-v00-01 submit-gated mirrors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gerrit-note/Doc/note/xWalk%20Git%20Cheat%20Sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Git cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki tool
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wiki tool
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../wiki-tool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes Wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xwalk rpi5 note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Xwalk rpi5 note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk C++ Documentation Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_1" id="__nav_4_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20ADC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkAdc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Basic%20Class/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkTrace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Filedb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkConfigStore and XWalkConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20I2C/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkI2c
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors and actuators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Motor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMotor and XWalkMotors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Music/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMusic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20PWM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkPwm and XWalkPwmTimerState
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Pin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkGpio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Robot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkRobot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkServo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20TTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ speech interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API%20Utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ utility interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Add%20a%20User%20to%20a%20Gerrit%20Repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Add a User to a Gerrit Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Battery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the battery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CLI%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk CLI architecture and HAL integration plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Clean%20Build%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Build Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Community%20Tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community C++ adaptations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Controller%20Command%20Flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Controller Command Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Create%20Gerrit%20and%20Configure%20xWalk%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Create Gerrit and Configure xWalk CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMake Dependency Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMake Dependency Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dependency-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmake-and-compiler-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake and compiler requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-cmake-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External CMake dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External CMake dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#googletest-tinyxml2-and-yaml-cpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GoogleTest, TinyXML2, and yaml-cpp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-and-grpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf and gRPC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alsa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALSA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libcurl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libcurl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threads-and-linux-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threads and Linux headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libsndfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libsndfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debian-and-ubuntu-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debian and Ubuntu packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#root-build-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root build modes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standalone-module-dependency-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone module dependency behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-and-packaging-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality and packaging tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmake-discovery-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake discovery troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CMake discovery troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grpc-configuration-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gRPC configuration not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alsa-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALSA not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#curl-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CURL not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libsndfile-development-files-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libsndfile development files missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-uapi-header-check-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux UAPI header check failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-xwalk-rpi5-iw-file-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generated xWalk-rpi5-iw file missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Dependency%20Installer%20Script%20Flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Installer Script Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Deployment%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Deployment Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Device%20Tree%20Overlay%20Assets%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Tree Overlay Assets Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQ/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety and troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Account%20Setup%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit Account Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HAL%20Arcithure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk high-level architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HAL%20Hardware%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk HAL hardware and backend architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hardware%20Provisioning%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Provisioning Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Coverage%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host Coverage Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Host%20Production%20Readiness%20Work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host production readiness work
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Firmware Robot HAT documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Install%20I2S%20for%20Speaker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure I2S for the speaker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Jarvis%20and%20Gemini%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Jarvis and Optional Gemini Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Language%20Model%20Provider%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language-Model Provider Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../License%20Key%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence-Key Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Onboard%20MCU/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Onboard MCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PiCar-X%20Controller%20Command%20Reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PiCar-X Controller Command Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Control%20Motor%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control servos and motors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20DIY%20Car/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ line-following car
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Photoresistor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read a photoresistor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Plant%20Monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ plant monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Say%20Something/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produce speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ security-system composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Project%20Ultrasonic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read ultrasonic distance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ project examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%205%20PiCar-X%20Readiness%20Audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi 5 and PiCar-X Readiness Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Raspberry%20Pi%20Setup%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Setup Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release%20Acceptance%20Checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release acceptance checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Environment%20Loader%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk environment loader guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Licence Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Licence%20Tool%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk licence tool guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk-rpi5-tool%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk-rpi5-tool Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dependency-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmake-and-compiler-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake and compiler requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-cmake-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External CMake dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External CMake dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#googletest-tinyxml2-and-yaml-cpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GoogleTest, TinyXML2, and yaml-cpp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-and-grpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf and gRPC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alsa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALSA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libcurl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libcurl
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threads-and-linux-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threads and Linux headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libsndfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libsndfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debian-and-ubuntu-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debian and Ubuntu packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#root-build-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root build modes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standalone-module-dependency-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone module dependency behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-and-packaging-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality and packaging tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmake-discovery-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake discovery troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CMake discovery troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protobuf-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protobuf not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grpc-configuration-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        gRPC configuration not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alsa-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALSA not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#curl-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CURL not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#libsndfile-development-files-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        libsndfile development files missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#linux-uapi-header-check-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linux UAPI header check failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-xwalk-rpi5-iw-file-missing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generated xWalk-rpi5-iw file missing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cmake-dependency-guide">CMake Dependency Guide<a class="headerlink" href="#cmake-dependency-guide" title="Permanent link">&para;</a></h1>
+<p>This guide documents the dependencies that CMake needs to configure and build the xWalk C++ workspace. It
+describes external development packages, project-target relationships, build-mode differences, and common
+discovery failures. It does not document the Python dependency installer.</p>
+<p>For the Python command-line interface, see
+<a href="../Dependency%20Installer%20Script%20Flags/">Dependency Installer Script Flags</a>.</p>
+<h2 id="dependency-model">Dependency model<a class="headerlink" href="#dependency-model" title="Permanent link">&para;</a></h2>
+<p>The workspace uses target-based CMake dependencies. Project modules are imported with <code>add_subdirectory()</code>
+and linked through named targets. External libraries are discovered only where their targets are needed.</p>
+<p>Do not add global include paths, global linker paths, or manually assembled <code>-l</code> flags. Portable reviewed
+packages may be installed under the selected <code>xWalkLibrary</code> prefix; otherwise install the matching system
+development package. In both cases, allow CMake to provide the imported target.</p>
+<p>The workspace uses a hybrid dependency model. <code>xWalk-rpi5-hw/xWalkLibrary/XWalkDependencies.cmake</code> maps the CMake target
+processor to <code>xWalk-rpi5-hw/xWalkLibrary/x86_64</code> or <code>xWalk-rpi5-hw/xWalkLibrary/aarch64</code>, prepends that prefix and <code>xWalk-rpi5-hw/xWalkLibrary/common</code>
+to <code>CMAKE_PREFIX_PATH</code>, and adds the native library directories to the build-tree RPATH. A compatible local
+package is therefore preferred, while ordinary system discovery remains available for a portable dependency
+that has not been reviewed into the repository.</p>
+<p>Workspace-wide <code>xWalkLibraryCommon</code> public headers, architecture-independent models, and configuration live under
+<code>xWalk-rpi5-hw/xWalkLibrary/common</code>. Each native prefix uses the conventional <code>bin</code>, <code>include</code>, <code>lib</code>, and <code>share</code> layout.
+Compilers, build tools, Linux kernel interfaces, ALSA integration, udev rules, camera tools, Device Tree
+overlays, system services, and package managers remain system-installed. See
+<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/xWalk-rpi5-hw/xWalkLibrary/README.md"><code>xWalk-rpi5-hw/xWalkLibrary/README.md</code></a> for inventory and overrides.</p>
+<p>The root build follows this dependency flow:</p>
+<pre><code class="language-text">MyPiCarX
+├── xWalkLibrary
+│   └── common
+├── xWalk-rpi5-iw
+├── xWalkHal modules and aggregate target
+└── xWalkController
+    └── xWalkAgent
+        └── HAL targets
+</code></pre>
+<p>Individual modules import a project dependency only when its target does not already exist. This permits both
+standalone module builds and aggregate builds without defining the same target twice.</p>
+<h2 id="cmake-and-compiler-requirements">CMake and compiler requirements<a class="headerlink" href="#cmake-and-compiler-requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Workspace role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMake 3.25 or newer</td>
+<td>Required by the checked-in <code>CMakePresets.json</code> schema</td>
+</tr>
+<tr>
+<td>CMake 3.16 or newer</td>
+<td>Minimum declared by individual project and module CMake files</td>
+</tr>
+<tr>
+<td>C++17 compiler</td>
+<td>Required by all public C++ targets</td>
+</tr>
+<tr>
+<td>Ninja</td>
+<td>Generator selected by every root configure preset</td>
+</tr>
+<tr>
+<td>Python 3</td>
+<td>Runs root deployment tests and validates the xWalk-rpi5-iw schema</td>
+</tr>
+<tr>
+<td><code>pkg-config</code></td>
+<td>Supports transitive discovery used by the installed gRPC configuration</td>
+</tr>
+</tbody>
+</table>
+<p>GCC and Clang are the supported host compilers. The configured C++ result is authoritative; editor indexing
+does not replace a successful CMake configure and build.</p>
+<h2 id="external-cmake-dependencies">External CMake dependencies<a class="headerlink" href="#external-cmake-dependencies" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Dependency</th>
+<th>CMake discovery</th>
+<th>Imported target or result</th>
+<th>Required when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Protobuf</td>
+<td><code>find_package(Protobuf REQUIRED)</code></td>
+<td><code>protobuf::libprotobuf</code></td>
+<td>Every build containing xWalk-rpi5-iw</td>
+</tr>
+<tr>
+<td>gRPC</td>
+<td><code>find_package(gRPC CONFIG REQUIRED)</code></td>
+<td><code>gRPC::grpc++</code></td>
+<td>Every build containing xWalk-rpi5-iw</td>
+</tr>
+<tr>
+<td>Python 3</td>
+<td><code>find_package(Python3)</code></td>
+<td><code>Python3_EXECUTABLE</code></td>
+<td>xWalk-rpi5-iw and root tests</td>
+</tr>
+<tr>
+<td>ALSA</td>
+<td><code>find_package(ALSA REQUIRED)</code></td>
+<td><code>ALSA::ALSA</code></td>
+<td>Audio and speech targets</td>
+</tr>
+<tr>
+<td>libcurl</td>
+<td><code>find_package(CURL REQUIRED)</code></td>
+<td><code>CURL::libcurl</code></td>
+<td>LanguageModel tests or Ollama provider</td>
+</tr>
+<tr>
+<td>Threads</td>
+<td><code>find_package(Threads REQUIRED)</code></td>
+<td><code>Threads::Threads</code></td>
+<td>Linux GPIO backend or GPIO hardware tests</td>
+</tr>
+<tr>
+<td>libsndfile</td>
+<td><code>find_path()</code> and <code>find_library()</code></td>
+<td><code>xWalkSndFileDependency</code></td>
+<td>Native Music decoder is enabled</td>
+</tr>
+<tr>
+<td>GoogleTest</td>
+<td><code>find_package(GTest CONFIG REQUIRED)</code></td>
+<td><code>GTest::gtest</code></td>
+<td>Central HAL tests are enabled</td>
+</tr>
+<tr>
+<td>json-c</td>
+<td><code>pkg_check_modules(JSON_C REQUIRED)</code></td>
+<td><code>PkgConfig::JSON_C</code></td>
+<td>Runtime trace JSON configuration</td>
+</tr>
+<tr>
+<td>TinyXML2</td>
+<td><code>find_package(tinyxml2 CONFIG REQUIRED)</code></td>
+<td><code>tinyxml2::tinyxml2</code></td>
+<td>Central HAL tests are enabled</td>
+</tr>
+<tr>
+<td>yaml-cpp</td>
+<td><code>find_package(yaml-cpp CONFIG REQUIRED)</code></td>
+<td><code>yaml-cpp::yaml-cpp</code></td>
+<td>YAML runners</td>
+</tr>
+<tr>
+<td>Linux UAPI headers</td>
+<td><code>check_include_file_cxx()</code></td>
+<td>Configure-test results</td>
+<td>Raspberry Pi aggregate build</td>
+</tr>
+</tbody>
+</table>
+<h3 id="googletest-tinyxml2-and-yaml-cpp">GoogleTest, TinyXML2, and yaml-cpp<a class="headerlink" href="#googletest-tinyxml2-and-yaml-cpp" title="Permanent link">&para;</a></h3>
+<p>When <code>BUILD_TESTING=ON</code> in a normal host build, <code>xWalk-rpi5-hw/xWalkHal/xWalkTest/xGoogleTest</code>
+creates the single HAL unit-test executable. GoogleTest supplies test
+registration and reporting; TinyXML2 validates the suite/case enablement file.
+yaml-cpp loads board, AI, example, and hardware runtime values. GoogleTest and
+TinyXML2 are test-only. An RPI build also requires yaml-cpp for the example
+launcher, including when testing is disabled.</p>
+<h3 id="protobuf-and-grpc">Protobuf and gRPC<a class="headerlink" href="#protobuf-and-grpc" title="Permanent link">&para;</a></h3>
+<p>The top-level <code>xWalk-rpi5-iw</code> module is part of the <code>xWalkHal</code> aggregate, so normal workspace builds require the
+Protobuf and gRPC C++ development libraries. CMake compiles the checked-in generated sources and links them to
+<code>protobuf::libprotobuf</code> and <code>gRPC::grpc++</code>.</p>
+<p>The Protobuf compiler and gRPC C++ plugin are not required merely to compile those checked-in sources. They
+are required after a schema change when regenerating the <code>xWalk-rpi5-iw/auto-gen</code> tree:</p>
+<pre><code class="language-sh">scripts/integration/py-agent/dev-tool/xHal_Rpi5CarIwGenerator --generate-cpp
+</code></pre>
+<h3 id="alsa">ALSA<a class="headerlink" href="#alsa" title="Permanent link">&para;</a></h3>
+<p>ALSA is required when any of these conditions enables an audio or speech backend:</p>
+<ul>
+<li><code>XWALK_AUDIO_BUILD_HOST_TESTS</code></li>
+<li><code>XWALK_AUDIO_BUILD_HARDWARE_TESTS</code></li>
+<li><code>XWALK_AUDIO_BUILD_LINUX_BACKEND</code></li>
+<li><code>XWALK_MUSIC_BUILD_HOST_TESTS</code></li>
+<li><code>XWALK_MUSIC_BUILD_HARDWARE_TESTS</code></li>
+<li><code>XWALK_MUSIC_BUILD_ALSA_BACKEND</code></li>
+<li>the corresponding xWalkGPT host, hardware, ALSA, Vosk, or Espeak path</li>
+</ul>
+<p>The aggregate host suite enables device-free ALSA software tests, so ALSA development headers are part of the
+normal host build requirements even though the tests do not open physical audio devices.</p>
+<h3 id="libcurl">libcurl<a class="headerlink" href="#libcurl" title="Permanent link">&para;</a></h3>
+<p>The LanguageModel module discovers libcurl when its host tests, hardware tests, or Ollama provider are
+enabled. Host tests inject controlled transport behavior; finding and linking libcurl does not contact an
+Ollama endpoint.</p>
+<h3 id="threads-and-linux-headers">Threads and Linux headers<a class="headerlink" href="#threads-and-linux-headers" title="Permanent link">&para;</a></h3>
+<p>The Linux GPIO backend links <code>Threads::Threads</code>. This is normally supplied by the compiler and operating
+system rather than a separate package.</p>
+<p>The Raspberry Pi aggregate checks for these Linux UAPI headers before adding hardware targets:</p>
+<ul>
+<li><code>linux/gpio.h</code></li>
+<li><code>linux/i2c-dev.h</code></li>
+<li><code>linux/i2c.h</code></li>
+<li><code>linux/spi/spidev.h</code></li>
+</ul>
+<p>The check is compile-only and does not open a GPIO, I2C, or SPI device.</p>
+<h3 id="libsndfile">libsndfile<a class="headerlink" href="#libsndfile" title="Permanent link">&para;</a></h3>
+<p>The native Music decoder searches for <code>sndfile.h</code> and the <code>sndfile</code> library only when
+<code>XWALK_MUSIC_BUILD_SNDFILE_DECODER=ON</code>. That option also requires the ALSA adapter. The Raspberry Pi aggregate
+enables both; the normal root host build does not enable the libsndfile decoder.</p>
+<h2 id="debian-and-ubuntu-packages">Debian and Ubuntu packages<a class="headerlink" href="#debian-and-ubuntu-packages" title="Permanent link">&para;</a></h2>
+<p>Install the dependencies for the complete root host build and test suite:</p>
+<pre><code class="language-sh">sudo apt-get install build-essential cmake ninja-build pkg-config python3 libasound2-dev libcurl4-openssl-dev libprotobuf-dev libgrpc++-dev libgtest-dev libjson-c-dev libtinyxml2-dev libyaml-cpp-dev
+</code></pre>
+<p>For the full Raspberry Pi-compatible CMake build, also install the Linux headers and libsndfile development
+package:</p>
+<pre><code class="language-sh">sudo apt-get install linux-libc-dev libsndfile1-dev
+</code></pre>
+<p>To regenerate the checked-in Protobuf and gRPC sources, additionally install:</p>
+<pre><code class="language-sh">sudo apt-get install protobuf-compiler protobuf-compiler-grpc
+</code></pre>
+<p>Runtime utilities such as <code>alsa-utils</code>, <code>espeak-ng</code>, <code>libttspico-utils</code>, <code>i2c-tools</code>, <code>gpiod</code>,
+<code>rpicam-apps</code>, <code>ffmpeg</code>, Ollama, and Vosk are deployment dependencies, not CMake library-discovery
+requirements. See
+<a href="https://github.com/TARS-v00-01/xWalkPiCarAI/blob/master/scripts/integration/apt-packages.txt"><code>scripts/integration/apt-packages.txt</code></a> for the complete build and runtime package
+map.</p>
+<p>The package commands above are the system fallback. GoogleTest, json-c, TinyXML2, yaml-cpp, Protobuf, gRPC,
+and libsndfile can instead be supplied under the selected native <code>xWalkLibrary</code>
+prefix. Vosk is already present there. APT packages are not extracted into <code>xWalkLibrary</code>, because their
+transitive dependencies, absolute paths, post-install scripts, and metadata can require the system prefix.</p>
+<h2 id="root-build-modes">Root build modes<a class="headerlink" href="#root-build-modes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Additional dependency behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>host-debug</code></td>
+<td>Full host tests: Protobuf, gRPC, Python, ALSA, curl, GoogleTest, json-c, TinyXML2, and yaml-cpp</td>
+</tr>
+<tr>
+<td><code>host-release</code></td>
+<td>Uses the same dependency surface as <code>host-debug</code></td>
+</tr>
+<tr>
+<td><code>sanity</code></td>
+<td>Uses host dependencies and enables strict compiler warnings</td>
+</tr>
+<tr>
+<td><code>clang-tidy</code></td>
+<td>Adds the external <code>clang-tidy</code> executable and compilation database</td>
+</tr>
+<tr>
+<td><code>sanitizers</code></td>
+<td>Requires compiler AddressSanitizer and UndefinedBehaviorSanitizer support</td>
+</tr>
+<tr>
+<td><code>thread-sanitizer</code></td>
+<td>Requires compiler ThreadSanitizer support in a separate build tree</td>
+</tr>
+<tr>
+<td><code>coverage</code></td>
+<td>Requires GCC-compatible coverage instrumentation and the external <code>gcovr</code> tool</td>
+</tr>
+<tr>
+<td><code>rpi-release</code></td>
+<td>Adds Linux UAPI headers, libsndfile, RPi backends, and Debian packaging</td>
+</tr>
+</tbody>
+</table>
+<p>Configure, build, and test the normal host tree from the workspace root:</p>
+<pre><code class="language-sh">cmake --fresh --preset host-debug
+cmake --build --preset host-debug --parallel
+ctest --preset host-debug
+</code></pre>
+<p>The Raspberry Pi preset builds hardware-labelled executables but hardware tests remain opt-in. Listing them
+is safe:</p>
+<pre><code class="language-sh">cmake --fresh --preset rpi-release
+cmake --build --preset rpi-release --parallel
+ctest --test-dir build-rpi/cmake -N -L hardware
+</code></pre>
+<p>Do not execute the hardware tests unless the correct Raspberry Pi and Robot HAT are connected, the robot is
+secured, and physical execution is explicitly approved.</p>
+<h2 id="standalone-module-dependency-behavior">Standalone module dependency behavior<a class="headerlink" href="#standalone-module-dependency-behavior" title="Permanent link">&para;</a></h2>
+<p>Standalone production-only modules usually need only a C++17 compiler and their internal project targets.
+Enabling a backend or test option can expand the external dependency surface.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Option or mode</th>
+<th>Added external requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xWalk-rpi5-iw</code></td>
+<td>Any configuration</td>
+<td>Protobuf, gRPC, and Python 3</td>
+</tr>
+<tr>
+<td><code>xWalkAudio</code></td>
+<td>Host tests, hardware tests, or Linux backend</td>
+<td>ALSA</td>
+</tr>
+<tr>
+<td><code>xWalkMusic</code></td>
+<td>Host tests, hardware tests, or ALSA backend</td>
+<td>ALSA</td>
+</tr>
+<tr>
+<td><code>xWalkMusic</code></td>
+<td><code>XWALK_MUSIC_BUILD_SNDFILE_DECODER=ON</code></td>
+<td>libsndfile and ALSA</td>
+</tr>
+<tr>
+<td><code>xWalkGPT</code></td>
+<td>Host tests, hardware tests, or speech/provider backends</td>
+<td>ALSA and Linux</td>
+</tr>
+<tr>
+<td><code>xWalkLanguageModel</code></td>
+<td>Tests or Ollama provider</td>
+<td>libcurl</td>
+</tr>
+<tr>
+<td><code>xWalkGpio</code></td>
+<td>Hardware tests or Linux backend</td>
+<td>Threads and Linux GPIO headers</td>
+</tr>
+<tr>
+<td>Hardware-dependent HAL modules</td>
+<td>Hardware-test option</td>
+<td>Linux and inherited backend dependencies</td>
+</tr>
+</tbody>
+</table>
+<p>Project-library dependencies such as <code>xWalkLibraryCommon</code>, <code>xWalkI2c</code>, <code>xWalkPwm</code>, <code>xWalkGpio</code>, and <code>xWalkAudio</code>
+are imported by the owning CMake files. Do not install them as operating-system packages.</p>
+<h2 id="quality-and-packaging-tools">Quality and packaging tools<a class="headerlink" href="#quality-and-packaging-tools" title="Permanent link">&para;</a></h2>
+<p>These executables support workspace workflows but are not linked C++ libraries:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clang-Tidy</td>
+<td><code>clang-tidy</code> preset build</td>
+</tr>
+<tr>
+<td>Cppcheck</td>
+<td><code>cppcheck</code> and <code>cppcheck-full</code> custom targets when detected</td>
+</tr>
+<tr>
+<td>gcovr</td>
+<td>Coverage report and enforced threshold generation</td>
+</tr>
+<tr>
+<td>ShellCheck</td>
+<td>GitHub host-quality workflow for shell scripts</td>
+</tr>
+<tr>
+<td>CPack and Debian tools</td>
+<td><code>rpi-release</code> packaging and release validation</td>
+</tr>
+</tbody>
+</table>
+<p>The root CMake project adds Cppcheck targets only when <code>cppcheck</code> is found and compilation-database export is
+enabled. Absence of Cppcheck does not break an ordinary host build.</p>
+<h2 id="cmake-discovery-troubleshooting">CMake discovery troubleshooting<a class="headerlink" href="#cmake-discovery-troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="protobuf-not-found">Protobuf not found<a class="headerlink" href="#protobuf-not-found" title="Permanent link">&para;</a></h3>
+<p>Install a reviewed Protobuf build under the selected <code>xWalkLibrary</code> prefix or install the system development
+package. The compiler package alone is insufficient because CMake needs the headers and link library.</p>
+<h3 id="grpc-configuration-not-found">gRPC configuration not found<a class="headerlink" href="#grpc-configuration-not-found" title="Permanent link">&para;</a></h3>
+<p>Install the gRPC C++ development package that provides <code>gRPCConfig.cmake</code>. Adding only a runtime gRPC library
+does not provide the imported <code>gRPC::grpc++</code> target.</p>
+<h3 id="alsa-not-found">ALSA not found<a class="headerlink" href="#alsa-not-found" title="Permanent link">&para;</a></h3>
+<p>Install ALSA development headers or disable the option that requested an ALSA backend. The aggregate host
+suite intentionally enables ALSA software tests.</p>
+<h3 id="curl-not-found">CURL not found<a class="headerlink" href="#curl-not-found" title="Permanent link">&para;</a></h3>
+<p>Install the libcurl development package or configure a production-only LanguageModel target without tests or
+the Ollama provider.</p>
+<h3 id="libsndfile-development-files-missing">libsndfile development files missing<a class="headerlink" href="#libsndfile-development-files-missing" title="Permanent link">&para;</a></h3>
+<p>Install the libsndfile development package or disable <code>XWALK_MUSIC_BUILD_SNDFILE_DECODER</code>. Do not leave the
+decoder enabled while disabling its required ALSA adapter.</p>
+<h3 id="linux-uapi-header-check-failed">Linux UAPI header check failed<a class="headerlink" href="#linux-uapi-header-check-failed" title="Permanent link">&para;</a></h3>
+<p>Install the target Linux userspace headers and confirm that the selected compiler or cross-compiling sysroot
+contains GPIO, I2C, and SPI headers. Do not bypass the check with cached result variables.</p>
+<h3 id="generated-xwalk-rpi5-iw-file-missing">Generated xWalk-rpi5-iw file missing<a class="headerlink" href="#generated-xwalk-rpi5-iw-file-missing" title="Permanent link">&para;</a></h3>
+<p>Install <code>protoc</code> and <code>grpc_cpp_plugin</code>, regenerate the checked-in files from the reviewed schemas, and rerun a
+fresh configure. Do not hand-edit generated output.</p>
+<h2 id="verification-boundary">Verification boundary<a class="headerlink" href="#verification-boundary" title="Permanent link">&para;</a></h2>
+<p>CMake dependency discovery and compilation do not establish that runtime services, models, device nodes, or
+physical hardware are available. Host tests remain the default verification path. Hardware execution requires
+the separate deployment and safety procedures.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.sections", "navigation.top", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

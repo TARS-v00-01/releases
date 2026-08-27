@@ -1,0 +1,3629 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Architecture, PiCar-X, Gerrit, CI, and deployment notes for xWalk.">
+      
+      
+      
+        <link rel="canonical" href="https://tars-v00-01.github.io/xWalkPiCarAI/gerrit-note/Doc/note/Gerrit%20Multi%20Repository%20Architecture/">
+      
+      
+        <link rel="prev" href="../Gerrit%20Local%20Linux%20Setup/">
+      
+      
+        <link rel="next" href="../Gerrit%20Security%20and%20Remote%20Access/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Gerrit multi-repository architecture - xWalk Developer Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gerrit-multi-repository-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-header__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            xWalk Developer Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Gerrit multi-repository architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="xWalk Developer Notes" class="md-nav__button md-logo" aria-label="xWalk Developer Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    xWalk Developer Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerrit note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit developer notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_2_1" id="__nav_2_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CodeScene%20CI%20Changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene CI changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CodeScene%20Code%20Health%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CodeScene Code Health CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Admin%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit admin setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Administrator%20Request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit administrator request
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Backup%20and%20Restore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit backup and restore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20CI%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit CI configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Local%20Linux%20Setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit local Linux setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit multi-repository architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit multi-repository architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-safety-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and safety state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-connectivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and connectivity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provisioning-and-acl-reconciliation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provisioning and ACL reconciliation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#history-preserving-migration-and-initial-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        History-preserving migration and initial imports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submodule-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule conversion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developer-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Developer workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standalone-and-compatibility-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone and compatibility validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-uplift-and-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic uplift and recovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-policy-and-actions-checkout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub policy and Actions checkout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-integration-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete integration validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerrit-change-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gerrit change history
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permission-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-another-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding another module
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#credential-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credential rotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#administrator-actions-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Administrator actions and limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Security%20and%20Remote%20Access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit security and remote access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Server%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit server overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Setup%20Installer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit setup installer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Storage%20and%20Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit storage and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20Troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gerrit%20User%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit user configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Integrated%20Uplift%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrated uplift workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TARS-v00-01%20Submit-Gated%20Mirrors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TARS-v00-01 submit-gated mirrors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xWalk%20Git%20Cheat%20Sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Git cheat sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki tool
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Wiki tool
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../wiki-tool/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Developer Notes Wiki
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xwalk rpi5 note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Xwalk rpi5 note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk C++ Documentation Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2_1" id="__nav_4_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Note
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Note
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20ADC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkAdc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Basic%20Class/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkTrace
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Filedb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkConfigStore and XWalkConfig
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20I2C/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkI2c
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors and actuators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Motor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMotor and XWalkMotors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Music/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkMusic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20PWM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkPwm and XWalkPwmTimerState
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Pin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkGpio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Robot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkRobot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XWalkServo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20TTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ speech interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API%20Utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ utility interfaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ API reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Add%20a%20User%20to%20a%20Gerrit%20Repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Add a User to a Gerrit Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Battery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About the battery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/CLI%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk CLI architecture and HAL integration plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Clean%20Build%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Clean Build Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Community%20Tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community C++ adaptations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Controller%20Command%20Flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Controller Command Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Create%20Gerrit%20and%20Configure%20xWalk%20CI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Create Gerrit and Configure xWalk CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Dependency%20Installer%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMake Dependency Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Dependency%20Installer%20Script%20Flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Installer Script Flags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Deployment%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Deployment Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Device%20Tree%20Overlay%20Assets%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Tree Overlay Assets Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/FAQ/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety and troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Gerrit%20Account%20Setup%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerrit Account Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/HAL%20Arcithure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk high-level architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/HAL%20Hardware%20Architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk HAL hardware and backend architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Hardware%20Introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Hardware%20Provisioning%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Provisioning Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Host%20Coverage%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host Coverage Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Host%20Production%20Readiness%20Work/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Host production readiness work
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Firmware Robot HAT documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Install%20I2S%20for%20Speaker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure I2S for the speaker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Jarvis%20and%20Gemini%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Jarvis and Optional Gemini Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Language%20Model%20Provider%20Configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language-Model Provider Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/License%20Key%20Workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licence-Key Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Onboard%20MCU/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Onboard MCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/PiCar-X%20Controller%20Command%20Reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PiCar-X Controller Command Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Control%20Motor%20Servo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control servos and motors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20DIY%20Car/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ line-following car
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Photoresistor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read a photoresistor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Plant%20Monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ plant monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Say%20Something/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produce speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ security-system composition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Project%20Ultrasonic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Read ultrasonic distance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ project examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Raspberry%20Pi%205%20PiCar-X%20Readiness%20Audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi 5 and PiCar-X Readiness Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Raspberry%20Pi%20Setup%20Script%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Raspberry Pi Setup Script Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/Release%20Acceptance%20Checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release acceptance checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/xWalk%20Environment%20Loader%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk environment loader guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/xWalk%20Licence%20Installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk Licence Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/xWalk%20Licence%20Tool%20Guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk licence tool guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../xwalk-rpi5-note/Doc/note/xWalk-rpi5-tool%20Overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    xWalk-rpi5-tool Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-safety-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and safety state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-and-connectivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration and connectivity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#access-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provisioning-and-acl-reconciliation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provisioning and ACL reconciliation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#history-preserving-migration-and-initial-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        History-preserving migration and initial imports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submodule-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submodule conversion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developer-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Developer workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standalone-and-compatibility-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standalone and compatibility validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-uplift-and-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic uplift and recovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-policy-and-actions-checkout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub policy and Actions checkout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-integration-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete integration validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerrit-change-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gerrit change history
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permission-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-another-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding another module
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#credential-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credential rotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#administrator-actions-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Administrator actions and limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="gerrit-multi-repository-architecture">Gerrit multi-repository architecture<a class="headerlink" href="#gerrit-multi-repository-architecture" title="Permanent link">&para;</a></h1>
+<h2 id="scope-and-safety-state">Scope and safety state<a class="headerlink" href="#scope-and-safety-state" title="Permanent link">&para;</a></h2>
+<p>The target architecture has independently reviewed Gerrit components and
+private submit-gated mirrors under <code>TARS-v00-01</code>. During migration,
+<code>xWalkPiCarAI/master</code> is the active integration branch; the final integration
+target is <code>xWalk-rpi5/master</code>. The migration tools stage work in new clones so the source
+monorepo remains usable until the administrator validates and submits the
+migration. A dry run is a plan, not proof that Gerrit repositories or
+permissions exist.</p>
+<p>The component repositories are <code>devloper-note</code>, <code>xWalkAgent</code>,
+<code>xWalkAudioResources</code>, <code>xWalkController</code>, <code>xWalkHal</code>, <code>xWalk-rpi5-iw</code>,
+<code>xWalkLibrary</code>, <code>xWalk-rpi5-tool</code>, and <code>xWalk-rpi5-trace</code>.
+<code>xWalk-rpi5-hw</code> records the components as exact submodule gitlinks together with
+top-level integration files, CMake entry points, GitHub workflows, and
+integration history. Reproducible builds must use
+<code>git submodule update --init --recursive</code>; they must not use uncontrolled
+<code>git submodule update --remote</code>.</p>
+<h2 id="configuration-and-connectivity">Configuration and connectivity<a class="headerlink" href="#configuration-and-connectivity" title="Permanent link">&para;</a></h2>
+<p>Copy and edit <code>xWalk-rpi5-tool/py-agent/gerrit-tool/config/multi-repo.conf</code>. Resolve the Gerrit
+host and administrator placeholders, retain unprivileged ports, and do not
+store passwords, tokens, or private keys in the file. <code>GERRIT_SSH_PORT</code> is the
+Gerrit SSH service, not the college login SSH port.</p>
+<pre><code class="language-bash">export XWALK_GERRIT_MULTI_REPO_CONFIG=&quot;$PWD/xWalk-rpi5-tool/py-agent/gerrit-tool/config/multi-repo.conf&quot;
+</code></pre>
+<p>The tools use three configurable groups: <code>xWalk-Owners</code>, <code>xWalk-Partners</code>, and
+<code>xWalk-CI</code>. The CI account is not an administrator. Only owners manage ACLs.
+The optional permission-only parent is <code>xWalk-Projects</code>.</p>
+<h2 id="access-matrix">Access matrix<a class="headerlink" href="#access-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Repository</th>
+<th>Public</th>
+<th>Partner</th>
+<th>Owner</th>
+<th>CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>devloper-note</code></td>
+<td>Read/clone</td>
+<td>Develop, review and submit</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalkHal</code></td>
+<td>Read/clone</td>
+<td>Review push</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalkController</code></td>
+<td>No access</td>
+<td>Review push</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalk-rpi5-iw</code></td>
+<td>No access</td>
+<td>Read/clone</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalkAgent</code></td>
+<td>No access</td>
+<td>Read/clone</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalkLibrary</code></td>
+<td>Read/clone</td>
+<td>Review push</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalk-rpi5-trace</code></td>
+<td>Read/clone</td>
+<td>Review push</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalkAudioResources</code></td>
+<td>No access</td>
+<td>No access</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalk-rpi5-tool</code></td>
+<td>No access</td>
+<td>No access</td>
+<td>Full/Owner</td>
+<td>Read and Verified</td>
+</tr>
+<tr>
+<td><code>xWalk-rpi5-hw</code></td>
+<td>No access</td>
+<td>No access</td>
+<td>Full/Owner</td>
+<td>Read, uplift review push and Verified</td>
+</tr>
+</tbody>
+</table>
+<p>Review push means read plus upload to <code>refs/for/master</code>; it does not grant direct
+branch push, submit, force push, branch deletion, ACL administration, or
+ownership. Partner direct push to <code>devloper-note/master</code> remains disabled unless
+<code>GERRIT_PARTNER_DEVNOTE_DIRECT_PUSH=true</code> is deliberately selected. Private
+projects use exclusive read rules and explicit anonymous, registered-user, and
+partner denial rules to block unsafe inheritance from <code>All-Projects</code>.</p>
+<p>Every code project uses <code>master</code> as its default and review branch. Gerrit
+requires Code-Review, Verified, and no unresolved comments on the current patch
+set. The review-controls plugin displays Submit only after Gerrit reports those
+requirements satisfied and the signed-in user has Submit permission.</p>
+<h2 id="provisioning-and-acl-reconciliation">Provisioning and ACL reconciliation<a class="headerlink" href="#provisioning-and-acl-reconciliation" title="Permanent link">&para;</a></h2>
+<p>Always review the plan first:</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-multi-repo-provision.sh --dry-run
+</code></pre>
+<p>Provisioning discovers and preserves existing groups and projects. Apply is
+allowed only after an administrator confirms the plan:</p>
+<pre><code class="language-bash">export XWALK_CONFIRM_PROVISION=&quot;CREATE_XWALK_REPOSITORIES&quot;
+</code></pre>
+<pre><code class="language-bash">export XWALK_CONFIRM_ACL=&quot;APPLY_XWALK_ACL&quot;
+</code></pre>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-multi-repo-provision.sh --apply
+</code></pre>
+<p>The ACL tool clones and reviews <code>refs/meta/config</code>; it never edits
+<code>$GERRIT_SITE/git</code>. Each permission receives a separate audit row. Before
+apply, back up Gerrit and inspect inherited permissions on <code>All-Projects</code>.</p>
+<h2 id="history-preserving-migration-and-initial-imports">History-preserving migration and initial imports<a class="headerlink" href="#history-preserving-migration-and-initial-imports" title="Permanent link">&para;</a></h2>
+<p>Install an administrator-approved <code>git-filter-repo</code> command before apply. The
+split tool validates the fixed component allowlist, requires a clean source,
+creates independent clones outside the workspace, rewrites only those clones,
+renames their branch to <code>master</code>, and leaves the original history unchanged.
+The integrated workspace is the migration source of truth. The split ignores
+embedded component <code>.git</code> directories so a stale nested checkout cannot replace
+the content recorded by the integration commit.
+<code>xWalk-rpi5-tool</code> is split from its top-level path; product modules are split from
+their paths below <code>xWalk-rpi5-hw</code>.
+Renamed components include both their legacy and current paths so history from
+before the rename remains reachable. New Gerrit projects use an unborn
+<code>master</code>: import the parent baseline directly, then upload the renamed tip
+through <code>refs/for/master</code>.
+Gerrit's branch listing omits an unborn <code>master</code>; provisioning records this as
+the expected pre-import state and sets HEAD after the branch exists.</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-history-split.sh --dry-run
+</code></pre>
+<pre><code class="language-bash">export XWALK_SPLIT_OUTPUT_DIR=&quot;/safe/new/component-splits&quot;
+</code></pre>
+<pre><code class="language-bash">export XWALK_CONFIRM_SPLIT=&quot;SPLIT_COMPONENT_HISTORY&quot;
+</code></pre>
+<pre><code class="language-bash">export XWALK_IMPORT_MODE=&quot;none&quot;
+</code></pre>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-history-split.sh --apply
+</code></pre>
+<p>Inspect every split repository before import. Use <code>XWALK_IMPORT_MODE=review</code>
+for <code>refs/for/master</code>. Use <code>direct</code> only for an administrator-authorized empty
+repository bootstrap. Neither mode configures or pushes a component GitHub
+remote. Do not use force push, <code>--mirror</code>, or wildcard refspecs.</p>
+<h2 id="submodule-conversion">Submodule conversion<a class="headerlink" href="#submodule-conversion" title="Permanent link">&para;</a></h2>
+<p>The conversion tool creates a new integration clone; it does not remove live
+component directories from this workspace. Apply it only after all component
+<code>master</code> branches contain the verified split commits.</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-submodule-migrate.sh --dry-run
+</code></pre>
+<pre><code class="language-bash">export XWALK_INTEGRATION_OUTPUT_DIR=&quot;/safe/new/xWalk-rpi5-hw&quot;
+</code></pre>
+<pre><code class="language-bash">export XWALK_CONFIRM_SUBMODULES=&quot;CREATE_INTEGRATION_CLONE&quot;
+</code></pre>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-submodule-migrate.sh --apply
+</code></pre>
+<p>The resulting commit must be reviewed before replacing the monorepo baseline.
+Validate <code>.gitmodules</code>, every mode-<code>160000</code> gitlink, recursive initialization,
+portable relative URLs, and fetch-only GitHub remotes with blocked push URLs.</p>
+<h2 id="developer-workflows">Developer workflows<a class="headerlink" href="#developer-workflows" title="Permanent link">&para;</a></h2>
+<p>An authorized user clones the private integration project with:</p>
+<pre><code class="language-bash">git clone --recurse-submodules ssh://USER@GERRIT_SERVER_HOST:GERRIT_SSH_PORT/xWalk-rpi5-hw
+</code></pre>
+<p>Existing clones update safely with:</p>
+<pre><code class="language-bash">git pull --ff-only
+</code></pre>
+<pre><code class="language-bash">git submodule sync --recursive
+</code></pre>
+<pre><code class="language-bash">git submodule update --init --recursive
+</code></pre>
+<p>A module change is committed and reviewed inside that module:</p>
+<pre><code class="language-bash">cd xWalk-rpi5-hw/xWalkHal
+</code></pre>
+<pre><code class="language-bash">git switch master
+</code></pre>
+<pre><code class="language-bash">git pull --ff-only origin master
+</code></pre>
+<pre><code class="language-bash">git add .
+</code></pre>
+<pre><code class="language-bash">git commit -s -m &quot;Update HAL implementation&quot;
+</code></pre>
+<pre><code class="language-bash">git push origin HEAD:refs/for/master
+</code></pre>
+<p>Coordinated API work uses a Gerrit topic:</p>
+<pre><code class="language-bash">git push origin HEAD:refs/for/master%topic=TOPIC_NAME
+</code></pre>
+<p>After every related change is submitted, the topic-uplift entry point accepts
+one repository, full commit, and Gerrit change triple per component. It updates
+all listed gitlinks in one commit and runs integration validation once:</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-topic-uplift.sh --dry-run TOPIC_NAME xWalkLibrary LIBRARY_COMMIT LIBRARY_CHANGE xWalkHal HAL_COMMIT HAL_CHANGE
+</code></pre>
+<p>The partner documentation workflow is:</p>
+<pre><code class="language-bash">git clone ssh://PARTNER@GERRIT_SERVER_HOST:GERRIT_SSH_PORT/devloper-note
+</code></pre>
+<pre><code class="language-bash">cd devloper-note
+</code></pre>
+<pre><code class="language-bash">git add .
+</code></pre>
+<pre><code class="language-bash">git commit -s -m &quot;Update documentation&quot;
+</code></pre>
+<pre><code class="language-bash">git push origin HEAD:refs/for/master
+</code></pre>
+<p>Users generate their own SSH keys on their own computers and upload only the
+public key to their individual Gerrit accounts. Private keys are never shared.</p>
+<h2 id="standalone-and-compatibility-validation">Standalone and compatibility validation<a class="headerlink" href="#standalone-and-compatibility-validation" title="Permanent link">&para;</a></h2>
+<p>Each migrated code repository must provide a top-level standalone CMake entry
+point before its ACL allows normal submission. The standard validation is:</p>
+<pre><code class="language-bash">cmake --fresh -S MODULE -B build-host/MODULE -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXWALK_STANDALONE_BUILD=ON
+</code></pre>
+<pre><code class="language-bash">cmake --build build-host/MODULE --parallel
+</code></pre>
+<pre><code class="language-bash">ctest --test-dir build-host/MODULE --output-on-failure --no-tests=error
+</code></pre>
+<p>Dependencies come from exact <code>xWalkLibrary</code>, <code>xWalk-rpi5-trace</code>, and
+<code>xWalkAudioResources</code> revisions or approved artifacts. <code>xWalkLibrary</code> and
+<code>xWalk-rpi5-trace</code> changes test direct consumers; audio-resource changes validate
+resources and audio consumers; documentation changes validate formatting and
+links. Cross-repository topics test all participating revisions. Until every
+split repository has a self-contained standalone entry point, trusted Gerrit
+CI must validate the patch in an exact <code>xWalk-rpi5-hw</code> integration checkout and the
+migration must not be declared complete.</p>
+<h2 id="automatic-uplift-and-recovery">Automatic uplift and recovery<a class="headerlink" href="#automatic-uplift-and-recovery" title="Permanent link">&para;</a></h2>
+<p>After a module change is submitted, the event service invokes the uplift tool
+with its full commit, source Gerrit change, patch set, and optional source
+topic:</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-auto-uplift.sh --dry-run xWalkHal FULL_COMMIT_ID GERRIT_CHANGE PATCHSET TOPIC
+</code></pre>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-auto-uplift.sh --apply xWalkHal FULL_COMMIT_ID GERRIT_CHANGE PATCHSET TOPIC
+</code></pre>
+<p>Apply acquires a lock, clones clean <code>xWalkPiCarAI/master</code>, and proves the component
+commit is reachable from its Gerrit <code>master</code>. During migration it replaces only the selected integrated module
+source tree. It then creates a
+signed-off uplift commit and uploads an active review. The patch-set event runs the complete integrated CI graph.
+Automatic review, submission, and GitHub synchronization are disabled until their
+separate service accounts and Gerrit policy are installed and tested. See
+the <a href="../Integrated%20Uplift%20Workflow/">integrated uplift workflow</a> for the
+current <code>xWalkPiCarAI/master</code> controls.</p>
+<h2 id="github-policy-and-actions-checkout">GitHub policy and Actions checkout<a class="headerlink" href="#github-policy-and-actions-checkout" title="Permanent link">&para;</a></h2>
+<p>Every mapped Gerrit project has one private submit-gated mirror under
+<code>https://github.com/TARS-v00-01</code>. The exact mapping is maintained in
+<code>tars-mirror-map.tsv</code>. Gerrit is authoritative; developers upload only to
+<code>refs/for/master</code>, and GitHub pull requests do not replace Gerrit review.</p>
+<p>The Gerrit replication plugin has one exact remote section per project and
+publishes only <code>refs/heads/master:refs/heads/master</code> after the branch changes on
+Submit. No replication refspec targets changes, drafts, metadata, users, edits,
+cache refs, or other pending review state. Direct developer GitHub pushes,
+<code>git push --mirror</code>, <code>git push --all</code>, force pushes, and
+<code>git submodule foreach git push</code> remain prohibited.</p>
+<p>The integration metadata check runs <code>validate-publication-policy.sh</code>. It rejects direct GitHub push commands in
+GitHub Actions and project-owned code outside the two guarded synchronization implementations. This makes a direct
+publication command a Host Quality failure before submission.</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-github-sync.sh --dry-run
+</code></pre>
+<p>GitHub Actions reads private sibling submodules using the protected,
+fine-grained <code>TARS_SUBMODULE_TOKEN</code>. Give that machine credential only
+contents read access to mapped repositories. The checkout helper removes the
+temporary authorization header after recursive initialization. Prefer an
+approved GitHub App installation token when available.</p>
+<p>See <a href="../TARS-v00-01%20Submit-Gated%20Mirrors/">TARS-v00-01 submit-gated mirrors</a> for the
+complete mapping, replication configuration, credential rotation,
+troubleshooting, and rollback procedure.</p>
+<h2 id="complete-integration-validation">Complete integration validation<a class="headerlink" href="#complete-integration-validation" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">cmake --fresh -S . -B build-host/integration -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXWALK_ENABLE_STRICT_WARNINGS=ON
+</code></pre>
+<pre><code class="language-bash">cmake --build build-host/integration --parallel
+</code></pre>
+<pre><code class="language-bash">ctest --test-dir build-host/integration --output-on-failure --no-tests=error
+</code></pre>
+<pre><code class="language-bash">build-host/integration/xWalkController/xWalkApp/xwalk-picarx-control --deployment-config=&quot;$PWD/xWalkController/xWalkConfig/picar-x.conf&quot; --diagnose --no-hardware
+</code></pre>
+<p>Ordinary CI never actuates physical hardware.</p>
+<h2 id="gerrit-change-history">Gerrit change history<a class="headerlink" href="#gerrit-change-history" title="Permanent link">&para;</a></h2>
+<p>Record source changes in the Gerrit commit message and review history. CI votes,
+validation results, and synchronization outcomes are posted directly to the
+affected Gerrit change. Do not create CSV or Markdown operation logs in the
+source repository.</p>
+<h2 id="permission-verification">Permission verification<a class="headerlink" href="#permission-verification" title="Permanent link">&para;</a></h2>
+<p>Plan all forty identity/repository checks with:</p>
+<pre><code class="language-bash">xWalk-rpi5-tool/py-agent/gerrit-tool/shell-script/gerrit-permission-check.sh --dry-run
+</code></pre>
+<p>Apply read checks only with dedicated public, partner, owner, and CI test
+identities. Missing credentials are recorded as <code>Skipped</code>, never as success.
+Read checks do not prove review upload, label, submit, force-push, branch
+deletion, or ACL administration. Test those negative and positive operations
+with disposable changes and the correct individual accounts, then inspect each
+<code>refs/meta/config</code>. The partner must be unable to list or clone
+<code>xWalkAudioResources</code> and <code>xWalk-rpi5-hw</code>; CI must be unable to administer ACLs or
+force-push.</p>
+<h2 id="adding-another-module">Adding another module<a class="headerlink" href="#adding-another-module" title="Permanent link">&para;</a></h2>
+<p>Adding a module is an architecture change. Update the fixed allowlists, ACL
+matrix, provisioning tests, split tests, standalone CI dependency map,
+<code>.gitmodules</code>, uplift validation, documentation, and operation-log report in
+one reviewed topic. Create it only in Gerrit. Do not create a component GitHub
+repository manually; add its explicit submit-gated mapping and let an
+administrator create the empty private destination before initial import.</p>
+<h2 id="credential-rotation">Credential rotation<a class="headerlink" href="#credential-rotation" title="Permanent link">&para;</a></h2>
+<p>Create the replacement key on the account or CI secret owner, upload its
+public half, verify read/vote or owner behavior, rotate the protected secret,
+restart only the user-owned CI process, then revoke the old public key. Rotate
+each repository-scoped GitHub deploy credential separately. Never display
+or commit private keys, tokens, cookies, authorization headers, or passwords.</p>
+<h2 id="administrator-actions-and-limitations">Administrator actions and limitations<a class="headerlink" href="#administrator-actions-and-limitations" title="Permanent link">&para;</a></h2>
+<p>The Gerrit administrator must authorize project creation, group membership,
+<code>refs/meta/config</code> changes, the initial direct imports when needed, CI label
+permissions, and network reachability. College IT must allow the configured
+Gerrit HTTP/HTTPS and SSH ports from the eduVPN subnet when blocked. A shared
+disk does not provide network access.</p>
+<p>This repository deliberately does not perform provisioning, imports,
+submodule conversion, permission probes, uplifts, or GitHub pushes during a
+normal build. Remote readiness requires administrator-authorized apply runs and
+independent permission tests with real accounts.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.sections", "navigation.top", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
